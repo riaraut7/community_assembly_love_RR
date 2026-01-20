@@ -1374,6 +1374,9 @@ perform_prediction_experiment_parallel_wrapper <- function(
   assemblages,
   results_table) {
   # Extract variables
+  
+  #total_testing_possibilities <- length(results_table$num_test)
+  
   num_train = results_table$num_train[index]
   num_test = results_table$num_test[index]
   replicate_index = results_table$replicate_index[index]
@@ -1381,13 +1384,14 @@ perform_prediction_experiment_parallel_wrapper <- function(
   experimental_design = results_table$experimental_design[index]
   existing_state_idxs = unique(assemblages[,'state_idx'])
   
-  # Print for debugging purposes
-  print("--------------------------------------------")
-  cat(paste("Experiment: ",
-            "\n - Index/Replicate: ", index, " - ", replicate_index,
-            "\n - Training #: ", num_train,
-            "\n - Method & Design: ", method, " - ", experimental_design, "\n"
-  ))
+
+  # Print for debugging purposes -- I just commented out, hopefully that doesn't cause a freakout 
+  # print("--------------------------------------------")
+  # cat(paste("Experiment: ",
+  #           "\n - Index/Replicate: ", index, " - ", replicate_index,
+  #           "\n - Training #: ", num_train, 
+  #           "\n - Method & Design: ", method, " - ", experimental_design, "\n"
+  # ))
 
   # Subsample assemblage with desired replicates
   assemblages = assemblages %>% 

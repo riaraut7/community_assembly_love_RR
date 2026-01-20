@@ -73,3 +73,14 @@ df_cleaned <- df_all %>%
 
 df_43_only <- df_cleaned %>%
   filter(num_train == 43)
+
+write.csv(df_43_only, 'outputs/statistical/43_training_final_dataset.csv')
+
+#Plotting graphs, unstolen ---- 
+
+df_43 <- read.csv('outputs/statistical/43_training_final_dataset.csv')
+
+graph_43 <- ggplot(df_43, aes(x =name_nice , y = abundance_mae_mean_test_scaled, color = method)) + geom_point() + geom_jitter(width = 0.05)
+graph_43
+
+#when you get better graph ideas you can export them in the output/figures folder 
