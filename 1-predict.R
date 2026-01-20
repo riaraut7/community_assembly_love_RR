@@ -41,11 +41,9 @@ results = perform_prediction_experiment_full(
   data_fruit_flies,
   dataset_name = 'fruit_flies',
   num_species = length(grep("outcome",names(data_fruit_flies))), # in full dataset, should be 28
-  method_list = c('rf','sequential_rf','naive'),
+  method_list = c('rf','naive'),
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 1) # in full dataset, this is maximum # of replicates, reflects the last 30 rows of the data file where there are varying abundances (which are ignored by this code run)
-
-
 
 
 set.seed(1)
@@ -144,21 +142,5 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 3)
 
-
-# this does not run on my cluster - too much memory to run in parallel. had to put on HPC. 
-# run carefully on a local machine or reduce # of cores in src/configs.R ...
-set.seed(1)
-data_grassland_annual_plants = read.csv('data/grassland_annual_plants/data_grassland_annual_plants.csv')
-if (DEBUG_MODE==TRUE) {
-  data_grassland_annual_plants = data_grassland_annual_plants %>% sample_n(2^14)
-}
-results = perform_prediction_experiment_full(
-  directory_string,
-  data_grassland_annual_plants,
-  dataset_name = 'grassland_annual_plants',
-  num_species = 18,
-  method_list = setdiff(METHODS, 'sequential_rf'), # no sequential RF due to large parameter space
-  experimental_design_list = EXPERIMENTAL_DESIGNS,
-  num_replicates_in_data = 1)
 
 

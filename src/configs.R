@@ -1,11 +1,13 @@
 # Computation configs
-CORES = 20
+CORES = 1
 REPLICATES = 10
 GRID_POINTS = 20
 MIN_POINTS = 1e1
 MAX_POINTS = 1e4
-METHODS = c('sequential_rf', 'glv_rf', 'rf', 'naive','glv', 'glv_rf_full')
-EXPERIMENTAL_DESIGNS = c('high-1', 'high-2', 'low-2', 'low-3', 'mixed', 'prior')
+METHODS = c(#'sequential_rf', 'glv_rf', 
+  'rf', 'naive') #,'glv', 'glv_rf_full')
+EXPERIMENTAL_DESIGNS = c(#'high-1', 'high-2', 'low-2', 'low-3', 
+                         'mixed') #, 'prior')
 NUM_TEST = Inf
 MODEL_HYPERPARAMS = list(
   'num_factor_bins' = 9,
@@ -24,5 +26,6 @@ if (DEBUG_MODE == TRUE) {
   GRID_POINTS = 5
   MIN_POINTS = 1e1
   MAX_POINTS = 1e3
-  EXPERIMENTAL_DESIGNS =c('high-1', 'high-2', 'low-2', 'low-3', 'mixed', 'prior')
+  EXPERIMENTAL_DESIGNS =c(#'high-1', 'high-2', 'low-2', 'low-3', 
+                          'mixed') #, 'prior')
 }

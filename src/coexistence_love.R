@@ -106,14 +106,14 @@ convert_vec_to_state_idx_env <- function(
   )
 }
 
-get_single_species_and_leave_one_out_state_idxs <- function(
-  num_species) {
-  # Numerically calculate index vectors
-  single_species_state_idxs = 2^(0:(num_species-1))
-  leave_one_out_state_idxs = 2^num_species - 1 - 2^(0:(num_species-1))
-  
-  return(union(single_species_state_idxs, leave_one_out_state_idxs))
-}
+# get_single_species_and_leave_one_out_state_idxs <- function(
+#   num_species) {
+#   # Numerically calculate index vectors
+#   single_species_state_idxs = 2^(0:(num_species-1))
+#   leave_one_out_state_idxs = 2^num_species - 1 - 2^(0:(num_species-1))
+#   
+#   return(union(single_species_state_idxs, leave_one_out_state_idxs))
+# }
 
 get_full_state_grid <- function(
   num_species) {
@@ -398,158 +398,158 @@ fit_rf_classifier <- function(
   }
 }
 
-normalize_scores_sequential_rf <- function(scores) {
-  # Get the max and min
-  max_score = max(scores)
-  min_score = min(scores)
+# normalize_scores_sequential_rf <- function(scores) {
+#   # Get the max and min
+#   max_score = max(scores)
+#   min_score = min(scores)
+# 
+#   # Normalization
+#   normalized_scores = (scores - min_score) / (max_score - min_score)
+# 
+#   return(normalized_scores)
+# }
 
-  # Normalization
-  normalized_scores = (scores - min_score) / (max_score - min_score)
+# estimate_uncertainty_sequential_rf <- function(
+#   predictor_variable,
+#   assemblages,
+#   training_state_idxs,
+#   candidate_state_idxs,
+#   method,
+#   num_species,
+#   hyperparams = MODEL_HYPERPARAMS) {
+#   # Define the bootstrap variables
+#   predictions_full = list()
+#   num_bootstrap = hyperparams$sequential_rf$bootstrap
+# 
+#   # Loop over each bootstrap fitting to obtain predictions
+#   for (iteration in 1:num_bootstrap) {
+#     # Bootstrap sample
+#     bootstrap_training_state_idxs = sample(
+#       training_state_idxs, replace = TRUE)
+# 
+#     # Fit rf model and predict
+#     bootstrap_rf_model = fit_rf_classifier(
+#       predictor_variable, assemblages, bootstrap_training_state_idxs, method, num_species)
+#     bootstrap_predictions = predict_rf_classifier(
+#       predictor_variable, bootstrap_rf_model, assemblages, candidate_state_idxs, num_species)
+# 
+#     # Append to boostrap predictions
+#     predictions_full[[iteration]] = bootstrap_predictions
+#     prediction_rows = nrow(bootstrap_predictions)
+#     prediction_dims = ncol(bootstrap_predictions)
+#   }
+# 
+#   # Get the uncertainty score - MSE of bootstrap prediction
+#   predictions_full_multidim = array(
+#     unlist(predictions_full), 
+#     dim = c(prediction_rows, prediction_dims, num_bootstrap))
+#   uncertainty_score = rowSums(apply(predictions_full_multidim, c(1, 2), var))
+# 
+#   # Normalize if needs be
+#   if (hyperparams$sequential_rf$normalize) {
+#     uncertainty_score = normalize_scores_sequential_rf(uncertainty_score) 
+#   }
+# 
+#   return(uncertainty_score)
+# }
 
-  return(normalized_scores)
-}
-
-estimate_uncertainty_sequential_rf <- function(
-  predictor_variable,
-  assemblages,
-  training_state_idxs,
-  candidate_state_idxs,
-  method,
-  num_species,
-  hyperparams = MODEL_HYPERPARAMS) {
-  # Define the bootstrap variables
-  predictions_full = list()
-  num_bootstrap = hyperparams$sequential_rf$bootstrap
-
-  # Loop over each bootstrap fitting to obtain predictions
-  for (iteration in 1:num_bootstrap) {
-    # Bootstrap sample
-    bootstrap_training_state_idxs = sample(
-      training_state_idxs, replace = TRUE)
-
-    # Fit rf model and predict
-    bootstrap_rf_model = fit_rf_classifier(
-      predictor_variable, assemblages, bootstrap_training_state_idxs, method, num_species)
-    bootstrap_predictions = predict_rf_classifier(
-      predictor_variable, bootstrap_rf_model, assemblages, candidate_state_idxs, num_species)
-
-    # Append to boostrap predictions
-    predictions_full[[iteration]] = bootstrap_predictions
-    prediction_rows = nrow(bootstrap_predictions)
-    prediction_dims = ncol(bootstrap_predictions)
-  }
-
-  # Get the uncertainty score - MSE of bootstrap prediction
-  predictions_full_multidim = array(
-    unlist(predictions_full), 
-    dim = c(prediction_rows, prediction_dims, num_bootstrap))
-  uncertainty_score = rowSums(apply(predictions_full_multidim, c(1, 2), var))
-
-  # Normalize if needs be
-  if (hyperparams$sequential_rf$normalize) {
-    uncertainty_score = normalize_scores_sequential_rf(uncertainty_score) 
-  }
-
-  return(uncertainty_score)
-}
-
-estimate_diversity_sequential_rf <- function(
-  candidate_state_idxs,
-  assemblages, 
-  num_species,
-  hyperparams = MODEL_HYPERPARAMS) {
-  # Get the full state grid and extract states
-  candidate_state = get_assemblages_subset_from_state_idxs(
-    candidate_state_idxs, assemblages)[,1:num_species]
-
-  # Get the nearest neighbors (k + 1 since self is included for cross-distance)
-  nearest_k = hyperparams$sequential_rf$nearest_k
-  nearest_neighbors_object = nn2(
-    candidate_state, 
-    query = candidate_state, 
-    k = nearest_k + 1)
-
-  # Get the diversity score (self-distance is 0 so we use k)
-  diversity_score = rowSums(nearest_neighbors_object$nn.dists) / nearest_k
-
-  # Normalize if needs be
-  if (hyperparams$sequential_rf$normalize) {
-    diversity_score = normalize_scores_sequential_rf(diversity_score) 
-  }
-
-  return(diversity_score)
-}
-
-estimate_density_sequential_rf <- function(
-  training_state_idxs,
-  candidate_state_idxs,
-  assemblages, 
-  num_species,
-  hyperparams = MODEL_HYPERPARAMS) {
-  # Get the full state grid and extract states
-  candidate_state = get_assemblages_subset_from_state_idxs(
-    candidate_state_idxs, assemblages)[,1:num_species]
-  training_state = get_assemblages_subset_from_state_idxs(
-    training_state_idxs, assemblages)[,1:num_species]
-
-  # Get the nearest neighbor
-  nearest_neighbors_object = nn2(
-    training_state, 
-    query = candidate_state, 
-    k = 1)
-
-  # Get the density score
-  density_score = nearest_neighbors_object$nn.dists[,1]
-
-  # Normalize if needs be
-  if (hyperparams$sequential_rf$normalize) {
-    density_score = normalize_scores_sequential_rf(density_score) 
-  }
-
-  return(density_score)
-}
-
-estimate_best_candidates_sequential_rf <- function(
-  predictor_variable,
-  assemblages,
-  training_state_idxs,
-  batch_size, 
-  method,
-  num_species,
-  hyperparams = MODEL_HYPERPARAMS) {
-  # Set up comparison variables
-  candidate_state_idxs = setdiff(
-      unique(assemblages[,'state_idx']), training_state_idxs)
-  candidate_state = get_assemblages_subset_from_state_idxs(
-    candidate_state_idxs, assemblages)[,1:num_species]
-  score_weights = hyperparams$sequential_rf$score_weights
-
-  # Get the scores
-  uncertainty_score = estimate_uncertainty_sequential_rf(
-    predictor_variable, assemblages, training_state_idxs, 
-    candidate_state_idxs, method, num_species, hyperparams)
-  diversity_score = estimate_diversity_sequential_rf(
-    candidate_state_idxs, assemblages, num_species, hyperparams)
-  density_score = estimate_density_sequential_rf(
-    training_state_idxs, candidate_state_idxs, assemblages, 
-    num_species, hyperparams)
-
-  # Calculate the weighted score sum
-  full_score = (
-    uncertainty_score * score_weights$uncertainty +
-    diversity_score * score_weights$diversity +
-    density_score * score_weights$density
-  )
-
-  # Get the batch_size amount of best elements
-  full_score_sorted = order(full_score, decreasing = TRUE)
-  scored_state = candidate_state[full_score_sorted,]
-  scored_state_with_idxs = get_state_assemblages_mapping(num_species, scored_state)
-  scored_state_idxs = unique(scored_state_with_idxs[,'state_idx'])
-  best_state_idxs = scored_state_idxs[1:min(batch_size, length(scored_state_idxs))]
-
-  return(best_state_idxs)
-}
+# estimate_diversity_sequential_rf <- function(
+#   candidate_state_idxs,
+#   assemblages, 
+#   num_species,
+#   hyperparams = MODEL_HYPERPARAMS) {
+#   # Get the full state grid and extract states
+#   candidate_state = get_assemblages_subset_from_state_idxs(
+#     candidate_state_idxs, assemblages)[,1:num_species]
+# 
+#   # Get the nearest neighbors (k + 1 since self is included for cross-distance)
+#   nearest_k = hyperparams$sequential_rf$nearest_k
+#   nearest_neighbors_object = nn2(
+#     candidate_state, 
+#     query = candidate_state, 
+#     k = nearest_k + 1)
+# 
+#   # Get the diversity score (self-distance is 0 so we use k)
+#   diversity_score = rowSums(nearest_neighbors_object$nn.dists) / nearest_k
+# 
+#   # Normalize if needs be
+#   if (hyperparams$sequential_rf$normalize) {
+#     diversity_score = normalize_scores_sequential_rf(diversity_score) 
+#   }
+# 
+#   return(diversity_score)
+# }
+# 
+# estimate_density_sequential_rf <- function(
+#   training_state_idxs,
+#   candidate_state_idxs,
+#   assemblages, 
+#   num_species,
+#   hyperparams = MODEL_HYPERPARAMS) {
+#   # Get the full state grid and extract states
+#   candidate_state = get_assemblages_subset_from_state_idxs(
+#     candidate_state_idxs, assemblages)[,1:num_species]
+#   training_state = get_assemblages_subset_from_state_idxs(
+#     training_state_idxs, assemblages)[,1:num_species]
+# 
+#   # Get the nearest neighbor
+#   nearest_neighbors_object = nn2(
+#     training_state, 
+#     query = candidate_state, 
+#     k = 1)
+# 
+#   # Get the density score
+#   density_score = nearest_neighbors_object$nn.dists[,1]
+# 
+#   # Normalize if needs be
+#   if (hyperparams$sequential_rf$normalize) {
+#     density_score = normalize_scores_sequential_rf(density_score) 
+#   }
+# 
+#   return(density_score)
+# }
+# 
+# estimate_best_candidates_sequential_rf <- function(
+#   predictor_variable,
+#   assemblages,
+#   training_state_idxs,
+#   batch_size, 
+#   method,
+#   num_species,
+#   hyperparams = MODEL_HYPERPARAMS) {
+#   # Set up comparison variables
+#   candidate_state_idxs = setdiff(
+#       unique(assemblages[,'state_idx']), training_state_idxs)
+#   candidate_state = get_assemblages_subset_from_state_idxs(
+#     candidate_state_idxs, assemblages)[,1:num_species]
+#   score_weights = hyperparams$sequential_rf$score_weights
+# 
+#   # Get the scores
+#   uncertainty_score = estimate_uncertainty_sequential_rf(
+#     predictor_variable, assemblages, training_state_idxs, 
+#     candidate_state_idxs, method, num_species, hyperparams)
+#   diversity_score = estimate_diversity_sequential_rf(
+#     candidate_state_idxs, assemblages, num_species, hyperparams)
+#   density_score = estimate_density_sequential_rf(
+#     training_state_idxs, candidate_state_idxs, assemblages, 
+#     num_species, hyperparams)
+# 
+#   # Calculate the weighted score sum
+#   full_score = (
+#     uncertainty_score * score_weights$uncertainty +
+#     diversity_score * score_weights$diversity +
+#     density_score * score_weights$density
+#   )
+# 
+#   # Get the batch_size amount of best elements
+#   full_score_sorted = order(full_score, decreasing = TRUE)
+#   scored_state = candidate_state[full_score_sorted,]
+#   scored_state_with_idxs = get_state_assemblages_mapping(num_species, scored_state)
+#   scored_state_idxs = unique(scored_state_with_idxs[,'state_idx'])
+#   best_state_idxs = scored_state_idxs[1:min(batch_size, length(scored_state_idxs))]
+# 
+#   return(best_state_idxs)
+# }
 
 get_batch_sizes <- function(
   num_samples,
@@ -564,127 +564,127 @@ get_batch_sizes <- function(
   return(batch_size_vec)
 }
 
-fit_sequential_rf_classifier <- function(
-  predictor_variable,
-  assemblages,
-  num_train,
-  training_state_idxs,
-  method,
-  num_species,
-  hyperparams = MODEL_HYPERPARAMS) {
-  # Initial setup of training rows and other variables
-  sequential_training_state_idxs = training_state_idxs
-  sequential_rf_iterations = hyperparams$sequential_rf$iterations
-  max_states = length(unique(assemblages[,'state_idx']))
-  batch_size_vec = get_batch_sizes(
-    (num_train - length(training_state_idxs)),
-    sequential_rf_iterations)
-
-  for (iteration in 1:sequential_rf_iterations) {
-    # Get the best improvement points
-    batch_size = batch_size_vec[iteration]
-    best_state_idxs = estimate_best_candidates_sequential_rf(
-      predictor_variable, assemblages, 
-      sequential_training_state_idxs, batch_size, method,
-      num_species, hyperparams)
-
-    # Update the sequential training rows
-    sequential_training_state_idxs = union(
-      sequential_training_state_idxs, best_state_idxs)
-    if (length(sequential_training_state_idxs) == max_states) {break}
-  }
-
-  # Final fitting of random forest
-  sequential_rf_wrapper = fit_rf_classifier(
-    predictor_variable, assemblages, sequential_training_state_idxs, method, num_species)
-
-  return(sequential_rf_wrapper)
-}
-
-vectorize_state_for_glv <- function (
-  state_vec,
-  initial_idx,
-  num_species) {  
-  # Early exit
-  if (initial_idx > num_species || initial_idx < 1) {
-    stop("Invalid species index for vectorization")
-  }
-
-  # Vectorize state for 1_n x N
-  vectorized_state = rep(0, num_species^2)
-  start_idx = (initial_idx - 1) * num_species + 1
-  end_idx = initial_idx * num_species
-  vectorized_state[start_idx:end_idx] = state_vec
-
-  return(vectorized_state)
-}
-
-convert_training_row_to_glv_fitting <- function (
-  assemblages_row,
-  num_species) {
-  # Set up the column labeling
-  initial_cols = 1:num_species
-  existence_cols = names(assemblages_row)[grep("outcome", names(assemblages_row))]
-  initial_vec = as.numeric(assemblages_row[initial_cols])
-  state_vec = as.numeric(assemblages_row[existence_cols])
-  
-  # Get the initial existence indices
-  initial_existence = which(initial_vec == 1)
-
-  # Vectorized state conversion
-  glv_fitting_row = do.call(
-    rbind, 
-    lapply(
-      initial_existence, 
-      function(x) vectorize_state_for_glv(state_vec, x, num_species)
-    )
-  )
-
-  return(glv_fitting_row)
-}
-
-create_glv_dataset <- function(
-  assemblages,
-  num_species) {
-  # Get the vectorized versions
-  glv_fitting = do.call(
-    rbind,
-    apply (
-      assemblages,
-      1,
-      function(x) convert_training_row_to_glv_fitting(x, num_species)
-    )
-  )
-  species_names = names(assemblages[1:num_species])
-  colnames(glv_fitting) = crossing(species_names, species_names) %>% 
-    unite("cols", sep=".") %>% 
-    pull
-  
-  return(glv_fitting)
-}
-
-fit_glv_baseline <- function(
-  assemblages,
-  training_state_idxs,
-  num_species,
-  hyperparams = MODEL_HYPERPARAMS) {
-  # Get the training data
-  assemblages_training = get_assemblages_subset_from_state_idxs(
-    training_state_idxs, assemblages)
-  glv_training = create_glv_dataset(
-    assemblages_training, num_species)
-
-  # Fit a linear regression model
-  # Basically, GLV steady state equation for each index boils down to
-  # 1 + vec(A_matrix) * vec(1_n x N_h) = 0
-  # so every time, we are trying to get the vector product to be close/equal to -1
-  X = data.matrix(glv_training)
-  y = data.matrix(rep(-1, nrow(glv_training)))
-  A_effective_vec = as.numeric(ginv(X) %*% y)
-  A_effective = matrix(A_effective_vec, nrow = num_species, byrow=TRUE)
-
-  return(A_effective)
-}
+# fit_sequential_rf_classifier <- function(
+#   predictor_variable,
+#   assemblages,
+#   num_train,
+#   training_state_idxs,
+#   method,
+#   num_species,
+#   hyperparams = MODEL_HYPERPARAMS) {
+#   # Initial setup of training rows and other variables
+#   sequential_training_state_idxs = training_state_idxs
+#   sequential_rf_iterations = hyperparams$sequential_rf$iterations
+#   max_states = length(unique(assemblages[,'state_idx']))
+#   batch_size_vec = get_batch_sizes(
+#     (num_train - length(training_state_idxs)),
+#     sequential_rf_iterations)
+# 
+#   for (iteration in 1:sequential_rf_iterations) {
+#     # Get the best improvement points
+#     batch_size = batch_size_vec[iteration]
+#     best_state_idxs = estimate_best_candidates_sequential_rf(
+#       predictor_variable, assemblages, 
+#       sequential_training_state_idxs, batch_size, method,
+#       num_species, hyperparams)
+# 
+#     # Update the sequential training rows
+#     sequential_training_state_idxs = union(
+#       sequential_training_state_idxs, best_state_idxs)
+#     if (length(sequential_training_state_idxs) == max_states) {break}
+#   }
+# 
+#   # Final fitting of random forest
+#   sequential_rf_wrapper = fit_rf_classifier(
+#     predictor_variable, assemblages, sequential_training_state_idxs, method, num_species)
+# 
+#   return(sequential_rf_wrapper)
+# }
+# 
+# vectorize_state_for_glv <- function (
+#   state_vec,
+#   initial_idx,
+#   num_species) {  
+#   # Early exit
+#   if (initial_idx > num_species || initial_idx < 1) {
+#     stop("Invalid species index for vectorization")
+#   }
+# 
+#   # Vectorize state for 1_n x N
+#   vectorized_state = rep(0, num_species^2)
+#   start_idx = (initial_idx - 1) * num_species + 1
+#   end_idx = initial_idx * num_species
+#   vectorized_state[start_idx:end_idx] = state_vec
+# 
+#   return(vectorized_state)
+# }
+# 
+# convert_training_row_to_glv_fitting <- function (
+#   assemblages_row,
+#   num_species) {
+#   # Set up the column labeling
+#   initial_cols = 1:num_species
+#   existence_cols = names(assemblages_row)[grep("outcome", names(assemblages_row))]
+#   initial_vec = as.numeric(assemblages_row[initial_cols])
+#   state_vec = as.numeric(assemblages_row[existence_cols])
+#   
+#   # Get the initial existence indices
+#   initial_existence = which(initial_vec == 1)
+# 
+#   # Vectorized state conversion
+#   glv_fitting_row = do.call(
+#     rbind, 
+#     lapply(
+#       initial_existence, 
+#       function(x) vectorize_state_for_glv(state_vec, x, num_species)
+#     )
+#   )
+# 
+#   return(glv_fitting_row)
+# }
+# 
+# create_glv_dataset <- function(
+#   assemblages,
+#   num_species) {
+#   # Get the vectorized versions
+#   glv_fitting = do.call(
+#     rbind,
+#     apply (
+#       assemblages,
+#       1,
+#       function(x) convert_training_row_to_glv_fitting(x, num_species)
+#     )
+#   )
+#   species_names = names(assemblages[1:num_species])
+#   colnames(glv_fitting) = crossing(species_names, species_names) %>% 
+#     unite("cols", sep=".") %>% 
+#     pull
+#   
+#   return(glv_fitting)
+# }
+# 
+# fit_glv_baseline <- function(
+#   assemblages,
+#   training_state_idxs,
+#   num_species,
+#   hyperparams = MODEL_HYPERPARAMS) {
+#   # Get the training data
+#   assemblages_training = get_assemblages_subset_from_state_idxs(
+#     training_state_idxs, assemblages)
+#   glv_training = create_glv_dataset(
+#     assemblages_training, num_species)
+# 
+#   # Fit a linear regression model
+#   # Basically, GLV steady state equation for each index boils down to
+#   # 1 + vec(A_matrix) * vec(1_n x N_h) = 0
+#   # so every time, we are trying to get the vector product to be close/equal to -1
+#   X = data.matrix(glv_training)
+#   y = data.matrix(rep(-1, nrow(glv_training)))
+#   A_effective_vec = as.numeric(ginv(X) %*% y)
+#   A_effective = matrix(A_effective_vec, nrow = num_species, byrow=TRUE)
+# 
+#   return(A_effective)
+# }
 
 fit_rf_regressor <- function(
   assemblages,
@@ -723,79 +723,79 @@ fit_rf_regressor <- function(
   return(rf_model)
 }
 
-fit_glv_rf_residual_regressor <- function(
-  assemblages,
-  training_state_idxs,
-  method,
-  num_species) {
-  # First, fit the GLV baseline model
-  A_matrix = fit_glv_baseline(
-    assemblages, training_state_idxs, num_species)
-  
-  # Then, obtain the predictions from the GLV model
-  assemblages_training = data.frame(
-    get_assemblages_subset_from_state_idxs(
-      training_state_idxs, assemblages))
-  glv_predictions = predict_glv(
-    "_abundance", A_matrix, assemblages, 
-    training_state_idxs, num_species)
-  
-  # Get the residuals from GLV predictions
-  diff_columns = paste(
-    names(assemblages_training)[1:num_species], ".diff", sep="")
-  star_columns = get_named_columns("input", assemblages, method)[1:num_species]
-  assemblages_training[diff_columns] = (
-    assemblages_training[star_columns] - glv_predictions)
-
-  # Fit the residual RF
-  rf_model = fit_rf_regressor(
-    assemblages_training, training_state_idxs, method, num_species)
-
-  # Return the GLV and residual RF method
-  glv_rf_model = list(
-    "model_glv" = A_matrix,
-    "model_rf" = rf_model
-  )
-
-  return(glv_rf_model)
-}
-
-fit_glv_rf_full_info_classifier <- function(
-  predictor_variable,
-  assemblages,
-  training_state_idxs,
-  method,
-  num_species) {
-  # First, fit the GLV baseline model
-  A_matrix = fit_glv_baseline(
-    assemblages, training_state_idxs, num_species)
-  
-  # Then, obtain the predictions from the GLV model
-  assemblages_training = data.frame(
-    get_assemblages_subset_from_state_idxs(
-      training_state_idxs, assemblages))
-  glv_predictions = predict_glv(
-    "_abundance", A_matrix, assemblages, 
-    training_state_idxs, num_species)
-  
-  # Get the residuals from GLV predictions
-  glv_columns = paste(
-    names(assemblages_training)[1:num_species], ".glv", sep="")
-  assemblages_training[glv_columns] = glv_predictions
-
-  # Fit the RF classifier with GLV prior
-  rf_model = fit_rf_classifier(
-    predictor_variable, assemblages_training, training_state_idxs, 
-    method, num_species, TRUE)
-  
-  # Return the GLV and residual RF method
-  glv_rf_model = list(
-    "model_glv" = A_matrix,
-    "model_rf" = rf_model
-  )
-
-  return(glv_rf_model)
-}
+# fit_glv_rf_residual_regressor <- function(
+#   assemblages,
+#   training_state_idxs,
+#   method,
+#   num_species) {
+#   # First, fit the GLV baseline model
+#   A_matrix = fit_glv_baseline(
+#     assemblages, training_state_idxs, num_species)
+#   
+#   # Then, obtain the predictions from the GLV model
+#   assemblages_training = data.frame(
+#     get_assemblages_subset_from_state_idxs(
+#       training_state_idxs, assemblages))
+#   glv_predictions = predict_glv(
+#     "_abundance", A_matrix, assemblages, 
+#     training_state_idxs, num_species)
+#   
+#   # Get the residuals from GLV predictions
+#   diff_columns = paste(
+#     names(assemblages_training)[1:num_species], ".diff", sep="")
+#   star_columns = get_named_columns("input", assemblages, method)[1:num_species]
+#   assemblages_training[diff_columns] = (
+#     assemblages_training[star_columns] - glv_predictions)
+# 
+#   # Fit the residual RF
+#   rf_model = fit_rf_regressor(
+#     assemblages_training, training_state_idxs, method, num_species)
+# 
+#   # Return the GLV and residual RF method
+#   glv_rf_model = list(
+#     "model_glv" = A_matrix,
+#     "model_rf" = rf_model
+#   )
+# 
+#   return(glv_rf_model)
+# }
+# 
+# fit_glv_rf_full_info_classifier <- function(
+#   predictor_variable,
+#   assemblages,
+#   training_state_idxs,
+#   method,
+#   num_species) {
+#   # First, fit the GLV baseline model
+#   A_matrix = fit_glv_baseline(
+#     assemblages, training_state_idxs, num_species)
+#   
+#   # Then, obtain the predictions from the GLV model
+#   assemblages_training = data.frame(
+#     get_assemblages_subset_from_state_idxs(
+#       training_state_idxs, assemblages))
+#   glv_predictions = predict_glv(
+#     "_abundance", A_matrix, assemblages, 
+#     training_state_idxs, num_species)
+#   
+#   # Get the residuals from GLV predictions
+#   glv_columns = paste(
+#     names(assemblages_training)[1:num_species], ".glv", sep="")
+#   assemblages_training[glv_columns] = glv_predictions
+# 
+#   # Fit the RF classifier with GLV prior
+#   rf_model = fit_rf_classifier(
+#     predictor_variable, assemblages_training, training_state_idxs, 
+#     method, num_species, TRUE)
+#   
+#   # Return the GLV and residual RF method
+#   glv_rf_model = list(
+#     "model_glv" = A_matrix,
+#     "model_rf" = rf_model
+#   )
+# 
+#   return(glv_rf_model)
+# }
 
 fit_model <- function(
   predictor_variable,
@@ -946,159 +946,159 @@ predict_naive <- function(
   }
 }
 
-predict_glv_row <- function(
-  A_matrix,
-  assemblages,
-  predict_idx,
-  num_species,
-  clamp_zero = TRUE) {
-  # Get the prediction row and related quantities
-  predict_row = assemblages[predict_idx,]
-  predict_initial = as.numeric(predict_row[,1:num_species])
-  initial_idx = which(predict_initial == 1)
+# predict_glv_row <- function(
+#   A_matrix,
+#   assemblages,
+#   predict_idx,
+#   num_species,
+#   clamp_zero = TRUE) {
+#   # Get the prediction row and related quantities
+#   predict_row = assemblages[predict_idx,]
+#   predict_initial = as.numeric(predict_row[,1:num_species])
+#   initial_idx = which(predict_initial == 1)
+# 
+#   # Early exit if initial_idx has no initial state - GLV will default to 0
+#   if (length(initial_idx) == 0) {
+#     return(rep(0, num_species))
+#   }
+# 
+#   # Get the submatrix for the species that exist in the beginning
+#   A_effective_submatrix = A_matrix[initial_idx, initial_idx]
+# 
+#   # Make the prediction by -A^-1r, where r = 1 for us
+#   predict_existence_raw = as.numeric(
+#     -ginv(A_effective_submatrix) %*% rep(1, length(initial_idx)))
+#   if (clamp_zero == TRUE){
+#     predict_existence_raw = clamp(predict_existence_raw, lower = 0)
+#   }
+#   
+#   # Populate vector by picking which species existed in the beginning
+#   predict_existence = rep(0, num_species)
+#   predict_existence[initial_idx] = predict_existence_raw
+# 
+#   return(predict_existence)
+# }
+# 
+# predict_glv <- function(
+#   predictor_variable,
+#   A_matrix,
+#   assemblages,
+#   predict_state_idxs,
+#   num_species,
+#   clamp_zero = TRUE) {
+#   # Get the prediction data
+#   data_predict = get_assemblages_subset_from_state_idxs(
+#     predict_state_idxs, assemblages)
+# 
+#   # Predict using fitted GLV model for each row
+#   glv_predictions = do.call(
+#     rbind,
+#     lapply(
+#       1:nrow(data_predict),
+#       function(x) predict_glv_row(
+#         A_matrix, data_predict, x, num_species, clamp_zero)
+#     )
+#   )
+# 
+#   # If abundance use the mean training values masked by the input presence/absences
+#   if (predictor_variable == "_abundance") {
+#     values_predicted = glv_predictions
+#   }
+#   else {
+#     print(paste("Error, predictor variable is not valid:", predictor_variable))
+#     return(NULL)
+#   }
+# 
+#   return(values_predicted)
+# }
+# 
+# predict_glv_rf_residual <- function(
+#   predictor_variable,
+#   glv_rf_model,
+#   assemblages,
+#   predict_state_idxs,
+#   num_species) {
+#   # Get the prediction data
+#   data_predict = get_assemblages_subset_from_state_idxs(
+#     predict_state_idxs, assemblages)[, 1:num_species]
+# 
+#   # Predict using fitted GLV model for each row
+#   predictions_glv = do.call(
+#     rbind,
+#     lapply(
+#       1:nrow(data_predict),
+#       function(x) predict_glv_row(
+#         glv_rf_model$model_glv, data_predict, x, num_species)
+#     )
+#   )
+# 
+#   # Predict rf residuals
+#   predictions_rf_obj = predict(
+#     object = glv_rf_model$model_rf, 
+#     newdata = data_predict
+#   )
+#   predictions_rf = sapply(
+#     predictions_rf_obj$regrOutput, 
+#     function(x) {x$predicted}
+#   )
+#   
+#   # Get the final values by adding and clamping
+#   star_columns = paste(names(assemblages)[1:num_species], ".outcome", sep="")
+#   predictions = predictions_glv + predictions_rf
+#   # predictions = predictions_glv
+#   predictions[predictions < 1e-6] = 0
+#   colnames(predictions) = star_columns
+# 
+#   # If abundance use the mean training values masked by the input presence/absences
+#   if (predictor_variable == "_abundance") {
+#     values_predicted = predictions
+#   }
+#   else if (predictor_variable == "richness") {
+#     values_predicted = rowSums(predictions > 0)
+#   }
+#   else {
+#     print(paste("Error, predictor variable is not valid:", predictor_variable))
+#     return(NULL)
+#   }
+# 
+#   return(values_predicted)
+# }
 
-  # Early exit if initial_idx has no initial state - GLV will default to 0
-  if (length(initial_idx) == 0) {
-    return(rep(0, num_species))
-  }
 
-  # Get the submatrix for the species that exist in the beginning
-  A_effective_submatrix = A_matrix[initial_idx, initial_idx]
-
-  # Make the prediction by -A^-1r, where r = 1 for us
-  predict_existence_raw = as.numeric(
-    -ginv(A_effective_submatrix) %*% rep(1, length(initial_idx)))
-  if (clamp_zero == TRUE){
-    predict_existence_raw = clamp(predict_existence_raw, lower = 0)
-  }
-  
-  # Populate vector by picking which species existed in the beginning
-  predict_existence = rep(0, num_species)
-  predict_existence[initial_idx] = predict_existence_raw
-
-  return(predict_existence)
-}
-
-predict_glv <- function(
-  predictor_variable,
-  A_matrix,
-  assemblages,
-  predict_state_idxs,
-  num_species,
-  clamp_zero = TRUE) {
-  # Get the prediction data
-  data_predict = get_assemblages_subset_from_state_idxs(
-    predict_state_idxs, assemblages)
-
-  # Predict using fitted GLV model for each row
-  glv_predictions = do.call(
-    rbind,
-    lapply(
-      1:nrow(data_predict),
-      function(x) predict_glv_row(
-        A_matrix, data_predict, x, num_species, clamp_zero)
-    )
-  )
-
-  # If abundance use the mean training values masked by the input presence/absences
-  if (predictor_variable == "_abundance") {
-    values_predicted = glv_predictions
-  }
-  else {
-    print(paste("Error, predictor variable is not valid:", predictor_variable))
-    return(NULL)
-  }
-
-  return(values_predicted)
-}
-
-predict_glv_rf_residual <- function(
-  predictor_variable,
-  glv_rf_model,
-  assemblages,
-  predict_state_idxs,
-  num_species) {
-  # Get the prediction data
-  data_predict = get_assemblages_subset_from_state_idxs(
-    predict_state_idxs, assemblages)[, 1:num_species]
-
-  # Predict using fitted GLV model for each row
-  predictions_glv = do.call(
-    rbind,
-    lapply(
-      1:nrow(data_predict),
-      function(x) predict_glv_row(
-        glv_rf_model$model_glv, data_predict, x, num_species)
-    )
-  )
-
-  # Predict rf residuals
-  predictions_rf_obj = predict(
-    object = glv_rf_model$model_rf, 
-    newdata = data_predict
-  )
-  predictions_rf = sapply(
-    predictions_rf_obj$regrOutput, 
-    function(x) {x$predicted}
-  )
-  
-  # Get the final values by adding and clamping
-  star_columns = paste(names(assemblages)[1:num_species], ".outcome", sep="")
-  predictions = predictions_glv + predictions_rf
-  # predictions = predictions_glv
-  predictions[predictions < 1e-6] = 0
-  colnames(predictions) = star_columns
-
-  # If abundance use the mean training values masked by the input presence/absences
-  if (predictor_variable == "_abundance") {
-    values_predicted = predictions
-  }
-  else if (predictor_variable == "richness") {
-    values_predicted = rowSums(predictions > 0)
-  }
-  else {
-    print(paste("Error, predictor variable is not valid:", predictor_variable))
-    return(NULL)
-  }
-
-  return(values_predicted)
-}
-
-
-predict_glv_rf_full_info <- function(
-  predictor_variable,
-  glv_rf_model,
-  assemblages,
-  predict_state_idxs,
-  num_species) {
-  # Get the prediction data
-  data_predict = get_assemblages_subset_from_state_idxs(
-    predict_state_idxs, assemblages)
-
-  # Predict using fitted GLV model for each row
-  glv_predictions = do.call(
-    rbind,
-    lapply(
-      1:nrow(data_predict),
-      function(x) predict_glv_row(
-        glv_rf_model$model_glv, data_predict, x, num_species)
-    )
-  )
-
-  # Get the info from GLV predictions
-  glv_columns = paste(
-    names(data_predict)[1:num_species], ".glv", sep="")
-  star_columns = paste(
-    names(data_predict)[1:num_species], ".outcome", sep="")
-  data_predict[glv_columns] = glv_predictions
-
-  # Predict RF
-  values_predicted = predict_rf_classifier(
-    predictor_variable, glv_rf_model$model_rf, data_predict, 
-    predict_state_idxs, num_species, TRUE)
-
-  return(values_predicted)
-}
+# predict_glv_rf_full_info <- function(
+#   predictor_variable,
+#   glv_rf_model,
+#   assemblages,
+#   predict_state_idxs,
+#   num_species) {
+#   # Get the prediction data
+#   data_predict = get_assemblages_subset_from_state_idxs(
+#     predict_state_idxs, assemblages)
+# 
+#   # Predict using fitted GLV model for each row
+#   glv_predictions = do.call(
+#     rbind,
+#     lapply(
+#       1:nrow(data_predict),
+#       function(x) predict_glv_row(
+#         glv_rf_model$model_glv, data_predict, x, num_species)
+#     )
+#   )
+# 
+#   # Get the info from GLV predictions
+#   glv_columns = paste(
+#     names(data_predict)[1:num_species], ".glv", sep="")
+#   star_columns = paste(
+#     names(data_predict)[1:num_species], ".outcome", sep="")
+#   data_predict[glv_columns] = glv_predictions
+# 
+#   # Predict RF
+#   values_predicted = predict_rf_classifier(
+#     predictor_variable, glv_rf_model$model_rf, data_predict, 
+#     predict_state_idxs, num_species, TRUE)
+# 
+#   return(values_predicted)
+# }
 
 predict_model <- function(
   predictor_variable,
@@ -1388,7 +1388,7 @@ perform_prediction_experiment_parallel_wrapper <- function(
             "\n - Training #: ", num_train,
             "\n - Method & Design: ", method, " - ", experimental_design, "\n"
   ))
-  
+
   # Subsample assemblage with desired replicates
   assemblages = assemblages %>% 
     slice_sample(n = num_replicates_in_data, by = state_idx)
