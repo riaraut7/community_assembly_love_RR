@@ -396,7 +396,7 @@ df_obs_pred_augmented = df_obs_pred %>%
   rbind(fix_facets(df_obs_pred, name_this='fruit_flies')) %>%
   rbind(fix_facets(df_obs_pred, name_this='grassland_annual_plants_drought'))
 
-plots_scatter = df_obs_pred_augmented %>% group_by(name) %>%
+Oplots_scatter = df_obs_pred_augmented %>% group_by(name) %>%
   group_split %>%
   lapply(function(df_ss) {
     ggplot(df_ss, aes(x=abundance_pred,

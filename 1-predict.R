@@ -70,9 +70,6 @@ results = perform_prediction_experiment_full(
   num_replicates_in_data = 1)
 
 
-
-#ugh what now 
-
 # SINGLE ENVIRONMENTS
 
 set.seed(1)
