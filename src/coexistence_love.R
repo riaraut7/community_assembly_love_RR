@@ -876,6 +876,7 @@ predict_rf_classifier_multivar <- function(
       simplify = FALSE
     )) %>% 
       mutate(across(everything(), function(x) {as.numeric(as.character(x))}))
+    
   }
   else {
     print("Error, predictor variable is not valid")
@@ -1168,11 +1169,20 @@ evaluate_mean_absolute_error_multivar <- function(
   values_ground_truth) {
   # Get MAE with casewise mean
   mean_absolute_error = NA
+  
+  cat("pred class IN EVAL_MEAN_ABS_ERROR:", class(values_predicted), "\n")
+  cat("pred dim:", paste(dim(values_predicted), collapse = " x "), "\n")
+  cat("truth class:", class(values_ground_truth), "\n")
+  cat("truth dim:", paste(dim(values_ground_truth), collapse = " x "), "\n")
+  
+  
+  cat('Going to calculate mean abs error... >:( ', '\n')
   try(mean_absolute_error <- mean_absolute_error_casewise_mean(
     pred = values_predicted, 
-    obs = values_ground_truth)
+    obs = values_ground_truth
+    )
   )
-
+  cat('mean abs error calculated', '\n')
   return(mean_absolute_error)
 }
 
@@ -1335,9 +1345,13 @@ evaluate_initial_final_difference <- function(
     select(contains("outcome")) %>% as.matrix
   
   # Count # of species that were present but went absent
-  num_losses_mean = mean(apply(
-    (final_abundances==0) & (initial_conditions==1), 1, sum, na.rm = TRUE))
+  # cat('calculating species that were present but went absent')
+  # num_losses_mean = mean(
+  #   apply(
+  #   (final_abundances==0) & (initial_conditions==1), 1, sum, na.rm = TRUE))
 
+  cat('explicitly skipping num_losses_mean', '\n')
+  
   # Figure out abundance distribution in training
   abundance_final_skewness_mean = skewness(
     as.numeric(final_abundances), na.rm = TRUE)
@@ -1355,7 +1369,7 @@ evaluate_initial_final_difference <- function(
     abundances_dataset_all[abundances_dataset_all > 0], na.rm = TRUE)
 
   return(list(
-    num_losses_mean = num_losses_mean,
+    #num_losses_mean = num_losses_mean,
     abundance_final_skewness_mean = abundance_final_skewness_mean,
     abundance_final_skewness_nonzero_mean = abundance_final_skewness_nonzero_mean,
     abundance_q95_dataset = abundance_q95_dataset,
@@ -1481,7 +1495,7 @@ perform_prediction_experiment_parallel_wrapper <- function(
     data_train, assemblages, num_species)
   
   # Record to table
-  results_table$num_losses_mean[index] = difference_stats_train$num_losses_mean
+  #results_table$num_losses_mean[index] = difference_stats_train$num_losses_mean
   results_table$abundance_final_skewness_mean[index] = difference_stats_train$abundance_final_skewness_mean
   results_table$abundance_final_skewness_nonzero_mean[index] = difference_stats_train$abundance_final_skewness_nonzero_mean
   results_table$abundance_q95_dataset[index] = difference_stats_train$abundance_q95_dataset
@@ -1531,7 +1545,7 @@ perform_prediction_experiment_full <- function(
                               num_test=num_test, 
                               abundance_mae_mean_test=NA,
                               abundance_mae_mean_train=NA,
-                              num_losses_mean=NA,
+                              #num_losses_mean=NA,
                               abundance_q95_dataset=NA,
                               abundance_skewness_dataset=NA,
                               abundance_skewness_nonzero_dataset=NA,
@@ -1545,7 +1559,7 @@ perform_prediction_experiment_full <- function(
 
   # Apply multi core parallelization
   indices = 1:nrow(results_table)
-  if (parallelized) {
+  if (parallelized) { #so you're only parallelized if you have multiple cores tho right? And if I say core = 1, then i'm good? 
     results_list = mclapply(indices, function(index) {
       perform_prediction_experiment_parallel_wrapper(
         directory_string, dataset_name, num_species, 
