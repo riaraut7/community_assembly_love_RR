@@ -154,7 +154,7 @@ data_wildflowers = read.csv('data/wildflowers/data_wildflowers.csv') %>%
 data_wildflowers <- data_wildflowers %>% 
   select(-c("Plot", 'Harvest', 'Calculated_herbivory', 'n_herb_occurences', 'Measured_infection', 
             'n_infect_occurences', "composition","Species_diversity", "Functional_composition" , "Sown_sla", "N", 
-            "Sown_mpd_sla", "Notes"))
+            "Sown_mpd_sla", "Notes", "Block", "X", "X.1"))
 
 # data_wildflowers_numeric <- data_wildflowers %>% 
 #   mutate_all(as.numeric)
