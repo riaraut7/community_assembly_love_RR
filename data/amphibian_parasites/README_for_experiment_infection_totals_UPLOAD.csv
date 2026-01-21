@@ -1,0 +1,13 @@
+﻿variable,description,,,,,,,
+Treatment,"composition of amphibian host assemblage (B = Anaxyrus boreas, G = Taricha granulosa, P = Pseudacris regilla, R = Rana catesbeiana, T = Taricha torosa)",,,,,,,
+HostRichness,number of amphibian host species included,,,,,,,
+HostCount,number of host individuals per microcosm,,,,,,,
+Parasite,species of parasite,,,,,,,
+Count,number of parasite metacercariae detected among all individual hosts,,,,,,,*RR: I think this is the desirability index that you're trying to predict?? 
+TotalAdded,number of infectious parasites (cercariae) added initially,,,,,,,
+B,presence/absence of species B,,,,,,,
+P,presence/absence of species P,,,,,,,
+R,presence/absence of species R,,,,,,,
+G,presence/absence of species G,,,,,,,
+T,presence/absence of species T,,,,,,,
+CommFreq,"the community frequency of each host assemblage, as determined from field surveys; for each richness level (1, 2 or 4), this value is the proportion of empirical observations matching this composition",,,,,,,

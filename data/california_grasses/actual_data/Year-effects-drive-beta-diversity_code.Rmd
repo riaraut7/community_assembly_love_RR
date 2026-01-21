@@ -1,0 +1,485 @@
+---
+title: "PRYER spatially variable natives vs temporally variable exotics"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(vegan)
+library(lme4)
+library(lmerTest)
+library(patchwork)
+library(RColorBrewer)
+
+theme_cw <- function () { # plotting theme
+  theme_bw(base_size=12) %+replace% 
+    theme(
+      panel.background = element_blank(), 
+      plot.background = element_blank(), 
+      axis.ticks = element_line(colour = "grey70", size = rel(0.5)),
+      panel.grid.minor = element_blank(), 
+      panel.grid.major.x = element_blank(),
+      legend.background = element_blank(), 
+      legend.key = element_blank(),
+      strip.background = element_blank(), 
+     # axis.text=element_text(size=12),
+     # strip.text=element_text(size=12),
+      complete = TRUE
+      )
+}
+```
+
+## Reading in Data
+
+Working with the PRYER short-term grass (STG) experiment, which is all California grasses with five treatments: N, E, NE, NtE (2 week priority), NttE (1 year priority)
+
+```{r data, echo=FALSE, message=FALSE, warning=FALSE}
+stg <- read.csv('PRYER_STG.csv')
+names(stg) <- names(stg) %>% tolower()
+
+# NOTE problem data (21 rows)
+# View(filter(stg, problem.row == 'Y'))
+# there's also some blanks in the total.i column (possibly in the total.n column too)
+# but we're not using those for this paper
+
+# cleaning up treatment designations
+stg$treatment <- stg$treatment %>% gsub("[^a-z,A-Z]","", .)
+
+# want planting year to be a factor not an integer
+stg$plant.year <- as.factor(stg$plant.year)
+
+# filtering to our three treatments 
+stg.use <- stg %>% filter(!(problem.row == 'Y'), # Remove problem rows
+                          water == 'No', 
+                          treatment %in% c('N', 'tE', 'NE'))
+stg.use$site <- tolower(stg.use$site)
+
+stg.N <- stg.use %>% 
+  filter(treatment == 'N') %>%
+  mutate(avsp = 0,
+         brho = 0,
+         homu = 0,
+         vusp = 0)
+
+stg.E <- stg.use %>% 
+  filter(treatment == 'tE') %>%
+  mutate(brca = 0,
+         elgl = 0,
+         hobr = 0,
+         napu = 0)
+
+stg.use.2 <- rbind(stg.N, stg.E) %>%
+  mutate(total.seeded.2 = brca + elgl + hobr + napu + avsp + brho + homu + vusp)
+
+```
+
+### Distance to centroid whole dataset
+Beta diversity within treatments in the 2018 sampling using betadisper() in the vegan package for analysis of multivariate homogeneity of group dispersions. Splitting by sampling year--first plot is for the whole treatment-year, second is within-site distance to centroid. Note that 2015 and 2018 were the most complete sampling years and show the biggest difference. 
+
+```{r all-mod-sy, echo=FALSE, message=FALSE, warning=FALSE}
+# sampling year only 
+stg.use.2$dist.sample.yr <- NA
+stg.use.2$dist.sample.yr.site <- NA
+
+for(yr in unique(stg.use.2$data.collection.year)){
+        stg.sample <- stg.use.2 %>% filter(data.collection.year == yr, total.seeded.2 > 0)
+            stg.sample.community <- stg.sample %>% 
+                select(c(brca, elgl, hobr, napu, avsp, brho, homu, vusp))
+        
+        # Bray-curtis distance between samples
+        stg.sample.dist <- stg.sample.community %>% vegdist(method = 'bray', binary = 'false')
+        
+        # Calculate multivariate dispersions by treatment
+        stg.sample.mod <- betadisper(stg.sample.dist, stg.sample$treatment, type ='centroid')
+        # removes plots that were all 0s and have NaN in the dissimilarity matrix--that's why 
+        # we can't just fill this back into our dataframe
+        
+        stg.use.2[stg.use.2$data.collection.year==yr &  stg.use.2$total.seeded.2 > 0,'dist.sample.yr'] <- stg.sample.mod$distances
+        
+        for(s in unique(stg.sample$site)){
+          stg.sample.site <- stg.sample %>% filter(site == s)
+          stg.sample.site.community <- stg.sample.site %>% 
+            select(c(brca, elgl, hobr, napu, avsp, brho, homu, vusp))
+          
+          stg.sample.site.dist <- stg.sample.site.community %>% vegdist(method = 'bray', binary = 'false')
+          stg.sample.site.mod <- betadisper(stg.sample.site.dist, stg.sample.site$treatment, type = 'centroid')
+          
+          stg.use.2[stg.use.2$data.collection.year==yr &  
+                      stg.use.2$total.seeded.2 > 0 & 
+                      stg.use.2$site==s,'dist.sample.yr.site'] <- stg.sample.site.mod$distances
+          
+        }
+}
+
+
+
+stg.dist.summary.2 <- stg.use.2 %>% 
+        group_by(treatment, data.collection.year) %>%
+        dplyr::summarise(
+          dist.n = length(dist.sample.yr),
+          dist.site.n = length(dist.sample.yr.site),
+                dist.mean = mean(dist.sample.yr, na.rm = TRUE),
+                dist.se = sd(dist.sample.yr, na.rm = TRUE)/sqrt(dist.n),
+                dist.site.mean = mean(dist.sample.yr.site , na.rm = TRUE),
+                dist.site.se = sd(dist.sample.yr.site , na.rm = TRUE)/sqrt(dist.site.n))
+
+
+
+# analysis
+fit.dist.yr <- lmer(dist.sample.yr ~ treatment + (1|data.collection.year),
+                    data = stg.use.2)
+fit.dist.yr.site <- lmer(dist.sample.yr.site ~ treatment + (1|data.collection.year), 
+                         data = stg.use.2)
+
+
+stg.use.2 %>% filter(treatment == 'N') %>% 
+  select(dist.sample.yr.site) %>% colMeans(., na.rm = TRUE)
+stg.use.2 %>% filter(treatment == 'tE') %>% 
+  select(dist.sample.yr.site) %>% colMeans(., na.rm = TRUE)
+
+summary(fit.dist.yr)
+summary(fit.dist.yr.site)
+
+plot.spatial.yr.site <- ggplot(stg.dist.summary.2, 
+                               aes(x = data.collection.year, y = dist.site.mean, 
+                                   ymin = dist.site.mean - dist.site.se, 
+                                   ymax = dist.site.mean + dist.site.se,
+                                   color = treatment)) +
+  geom_point() +
+  geom_errorbar(width = 0.1) + 
+  geom_line() +
+  theme_cw() +
+  xlab('Data collection year') + 
+  ylab('Within-site plot variance') +
+  scale_color_manual(labels = c('Native species', 'Exotic species'), name = '',
+                     values = c('darkgreen','darkgoldenrod2')) +
+  theme(legend.position = 'none')
+
+```
+
+### Within-site for 2018 only
+```{r spatial-2018-site}
+
+stg.2018 <- stg.use.2 %>% filter(data.collection.year == 2018, total.seeded.2 > 0)
+
+# confirm across-site same as above
+summary(aov(dist.sample.yr ~ treatment, data = stg.2018))
+
+# within-site
+summary(aov(dist.sample.yr.site ~ treatment, data = stg.2018))
+stg.2018 %>% 
+  group_by(treatment) %>%
+  dplyr::summarise(within.mean = mean(dist.sample.yr.site, na.rm = TRUE))
+
+
+# need to do it differently to plot it
+stg.2018$treat.site <- paste(stg.2018$treatment, stg.2018$site, sep = '_')
+stg.2018.community <- stg.2018 %>% 
+        select(c(brca, elgl, hobr, napu, avsp, brho, homu, vusp))
+stg.2018.dist <- stg.2018.community %>% vegdist(method = 'bray', binary = 'false') # Bray-curtis distance between samples
+stg.2018.site.mod <- betadisper(stg.2018.dist, stg.2018$treat.site, type ='centroid')
+
+# individual plot points
+stg.2018.site.plot <- stg.2018 %>% filter(total.seeded.2 > 0)
+stg.2018.site.plot$x <- stg.2018.site.mod$vectors[,1]
+stg.2018.site.plot$y <- stg.2018.site.mod$vectors[,2]
+
+# centroid points
+stg.2018.cent <- data.frame(stg.2018.site.mod$centroids[,1:2])
+stg.2018.cent$treat.site <- rownames(stg.2018.cent)
+stg.2018.site.plot <- stg.2018.site.plot %>% left_join(stg.2018.cent, by = 'treat.site') %>%
+  rename(xc = PCoA1, yc = PCoA2)
+
+
+plot.2018.site <- ggplot(stg.2018.site.plot, aes(x = x, y = y, xend = xc, yend = yc,
+                          color = treatment, shape = site)) +
+  geom_segment(color = 'grey80', size = 0.3) +
+  geom_point() +
+  geom_text(label = 'Davis',
+            x = stg.2018.cent['N_davis',1], 
+            y = stg.2018.cent['N_davis',2],
+            color = 'black') +
+  geom_text(label = 'McL',
+            x = stg.2018.cent['N_mclaughlin',1], 
+            y = stg.2018.cent['N_mclaughlin',2],
+            color = 'black') +
+  geom_text(label = 'Hop',
+            x = stg.2018.cent['N_hopland',1], 
+            y = stg.2018.cent['N_hopland',2],
+            color = 'black') +
+  geom_text(label = 'Davis',
+            x = stg.2018.cent['tE_davis',1], 
+            y = stg.2018.cent['tE_davis',2],
+            color = 'black') +
+  geom_text(label = 'McL',
+            x = stg.2018.cent['tE_mclaughlin',1], 
+            y = stg.2018.cent['tE_mclaughlin',2],
+            color = 'black') +
+  geom_text(label = 'Hop',
+            x = stg.2018.cent['tE_hopland',1], 
+            y = stg.2018.cent['tE_hopland',2],
+            color = 'black') +
+  theme_cw() +
+  xlab('PCoA 1') + 
+  ylab('PCoA 2') +
+  xlim(c(-0.6, 0.5)) +
+  ylim(c(-0.3, 0.75)) +
+  scale_color_manual(values = c('darkgreen','darkgoldenrod2'), name = '', 
+                     labels = c('Perennial', 'Annual')) +
+  scale_shape_manual(values = c(16, 17, 15), guide = FALSE) +
+  theme(legend.position = c(0.8, 0.9))
+
+plot.within.site <-  plot.spatial.yr.site + plot.2018.site
+plot.within.site + plot_annotation(tag_levels = 'A')
+
+ggsave('spatial_site.pdf', width = 9, height = 5, units = 'in')
+
+```
+
+# Partitioning variance
+Using PERMANOVA and looking at the R2 explained by each factor. Paritioning is done separately for the natives and the exotics
+
+```{r adonis-all, echo=FALSE, message=FALSE, warning=FALSE}
+stg.r2 <- tibble(treatment = character(), site = double(), 
+                 plant.year = double(), data.collection.year = double(), 
+                 growing.seasons = double(),
+                 residual = double())
+stg.pv <- tibble(treatment = character(), site = double(), 
+                 plant.year = double(), data.collection.year = double(), 
+                 growing.seasons = double(),
+                 residual = double())
+
+for(treat in c('N','tE')){
+  stg.select <- stg.use.2 %>% filter(treatment == treat, total.seeded.2 > 0)
+  stg.select$data.collection.year <- factor(stg.select$data.collection.year)
+  stg.dist <- stg.select %>%
+        select(c(brca, elgl, hobr, napu, avsp, brho, homu, vusp)) %>%
+        vegdist()
+  perm <- adonis2(stg.dist ~  site + plant.year  + growing.seasons + data.collection.year, 
+                  data = stg.select)
+  # R2 values
+  out <- tibble(treatment = treat, 
+                site = perm$R2[1], plant.year = perm$R2[2], 
+                growing.seasons = perm$R2[3], 
+                data.collection.year = perm$R2[4],
+                residual = perm$R2[5])
+  stg.r2 <- stg.r2 %>% rbind(out)
+  
+  # pvalues
+  out.pv <- tibble(treatment = treat, 
+                site = perm$`Pr(>F)`[1], plant.year = perm$`Pr(>F)`[2], 
+                growing.seasons = perm$`Pr(>F)`[3], 
+                data.collection.year = perm$`Pr(>F)`[4],
+                residual = perm$`Pr(>F)`[5])
+  stg.pv <- stg.pv %>% rbind(out.pv)
+}
+
+stg.r2  %>% print()
+stg.pv %>% print()
+
+stg.r2.long <- stg.r2 %>% 
+  pivot_longer(cols = c(site, plant.year, growing.seasons, data.collection.year, residual), 
+               names_to = "component", values_to = "proportion")
+stg.r2.long$component <- factor(stg.r2.long$component, 
+                                levels = c('growing.seasons', 'data.collection.year',
+                                           'plant.year', 'site','residual'))
+
+cols <- c("#66A61E", "#7570B3","#1B9E77", "#D95F02", "#666666") 
+
+ggplot(stg.r2.long, aes(x = treatment, y = proportion, fill = component)) +
+  geom_bar(stat = "identity") +
+  theme_cw() +
+  ylab('Proportion of variance explained') +
+  xlab('Treatment') +
+  scale_x_discrete(labels = c('N' = 'Perennial', 'tE' = 'Annual')) +
+  scale_fill_manual(values = cols, name = 'Component',
+                    labels = c('data.collection.year' = 'Data collection year',
+                               'plant.year' = 'Planting year',
+                               'site' = 'Site', 'residual' = 'Residual',
+                               'growing.seasons' = 'Number of growing seasons'))
+
+ggsave('proportion-variance.pdf', width = 7, height = 5, units = 'in')
+
+
+# Printing corresponding p-values
+
+```
+
+## Turnover
+Removing the first growing season for any planting year, since we know that years 1 - 2 had a lot of change as plots stabilized. 
+```{r time-bc, echo=FALSE, message=FALSE, warning=FALSE}
+
+full.change.2 <- tibble(plot.id = character(), site = character(), treatment = character(),
+                        replicate = character(), delta.time = double(), dist.bc = double(),
+                        plant.year = integer())
+for(yr in unique(stg.use.2$plant.year)){
+  stg.yr <- stg.use.2 %>% filter(plant.year == yr, growing.seasons > 1)
+  stg.yr$plot <- paste(stg.yr$site, stg.yr$treatment, stg.yr$rep.5, sep = '.')
+  
+  stg.plots <- unique(stg.yr$plot)
+  num.plots <- length(stg.plots)
+  stg.yr.years <- unique(stg.yr$data.collection.year)
+  num.years <- length(stg.yr.years)
+  num.comparisons <- num.years - 1
+  
+  # delta time values
+  delta.times <- numeric()
+  for(i in 1:num.years-1){
+    # delta time between each year and all the others
+    diff.years <- stg.yr.years[i+1] - stg.yr.years[i] 
+    delta.times <- c(delta.times, diff.years) # add these comparisons to our list
+  }
+  # length(delta.times) # check that this equals num.comparisons
+  
+  ## dataframe of bray-curtis comparisons within each plot across the years
+  stg.change <- data.frame(plot.id = rep(stg.plots, each = num.comparisons),
+                           delta.time = rep(delta.times, times = num.plots), dist.bc = NA)
+  
+
+  for(i in 1:num.plots){
+    plot.i <- stg.plots[i]
+    plot.yrs <- stg.yr %>% 
+      filter(plot == plot.i) %>%
+      select(c(brca, elgl, hobr, napu, avsp, brho, homu, vusp))
+    plot.dists <- numeric()
+    for (i in 1:(num.years-1)){
+      plot.turn <- plot.yrs[i:(i+1),] %>% vegdist(na.rm = TRUE)
+      plot.dists <- c(plot.dists, plot.turn)
+    }
+    # check to only put it in if we have the right length, otherwise there's missing data
+    # or mixed up values
+    if(length(plot.dists) == num.comparisons){
+      stg.change[stg.change$plot.id == plot.i,'dist.bc'] <- plot.dists
+    }
+  }
+  
+  stg.change.2 <- stg.change %>% 
+    separate(plot.id, into = c('site','treatment','replicate'),
+             remove = FALSE) %>%
+    add_column(plant.year = yr)
+  
+  full.change.2 <- full.change.2 %>% rbind(stg.change.2)
+}
+
+```
+
+Calculating the coversion factor for delta time steps bigger than one year. Note that this was initially done in two steps, and the conversion factor has now been incorporated into the above
+```{r conversion factor}
+# calculating converstion factor for delta.time gaps bigger than 1 year
+ggplot(full.change.2, aes(x = delta.time, y = dist.bc, 
+                        color = treatment, fill = treatment)) +
+  #  facet_wrap(vars(plant.year)) +
+  geom_point() +
+  geom_line(stat = 'smooth',method = 'lm', se = FALSE, alpha = 0.3, aes(group = plot.id)) +
+  geom_smooth(method = 'lm', size = 1.5) +
+  theme_cw() +
+  scale_color_manual(labels = c('Perennial', 'Annual'), name = '',
+                     values = c('darkgreen','darkgoldenrod2')) +
+  scale_fill_manual(labels = c('Perennial', 'Annual'), name = '',
+                     values = c('darkgreen','darkgoldenrod2')) +
+  theme(legend.position = c(0.8, 0.2)) +
+  ylab('Bray-Curtis distance') + 
+  xlab('Delta time (years)')
+
+ggsave('time_conversion.pdf', width = 6, height = 5, units = 'in')
+
+summary(lm(dist.bc ~ delta.time, data = full.change.2))
+# use the slope and intercept from this model fit to determine that the converstion factor
+# should be 0.3
+
+full.change.3 <- full.change.2 %>%
+  mutate(dist.year = dist.bc/(1 + (delta.time - 1)*0.3)) 
+
+```
+
+Calculating treatment effects on turnover
+```{r turnover-treatment}
+summary(aov(dist.year ~ treatment, data = full.change.3))
+
+full.change.summary <- full.change.3 %>% 
+  group_by(treatment, site) %>%
+        dplyr::summarise(
+                turnover = mean(dist.year, na.rm = TRUE),
+                turn.se = sd(dist.year, na.rm = TRUE)/sqrt(length(dist.year)))
+
+
+ggplot(full.change.summary, aes(x = site, y = turnover, 
+                                ymin = turnover - turn.se, ymax = turnover + turn.se,
+                                color = treatment)) +
+  geom_point(position = position_dodge(width = 0.2)) +
+  geom_errorbar(width = 0.2, position = position_dodge(width = 0.2)) +
+  theme_cw() +
+  scale_color_manual(labels = c('Perennial', 'Annual'), name = '',
+                     values = c('darkgreen','darkgoldenrod2')) +
+    theme(legend.position = c(0.15, 0.9)) +
+  ylab('Turnover') + 
+  scale_x_discrete(name = 'Site',labels = c('Davis','Hopland','McLaughlin'))
+
+ggsave('turnover.pdf', width = 6, height = 5, units = 'in')
+
+```
+
+
+## Visualizing variation of different species
+Looking at the variation of all the planted species, to visualize all of this. Note that the lines are slightly misleading since they skip over the gaps in the data. 
+```{r species-time, echo=FALSE, message=FALSE, warning=FALSE}
+stg.long <- stg.use.2 %>% as.tibble() %>%
+  pivot_longer(c(brca, elgl, hobr, napu, avsp, brho, homu, vusp), 
+                     names_to = 'species', values_to = 'cover')
+capwords <- function(s, strict = FALSE) {
+    cap <- function(s) paste(toupper(substring(s, 1, 1)),
+                  {s <- substring(s, 2); if(strict) tolower(s) else s},
+                             sep = "", collapse = " " )
+    sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))
+}
+stg.long$site <- capwords(stg.long$site)
+stg.long$plot <- paste(stg.long$site, stg.long$treatment, stg.long$rep.5,sep = '.')
+
+species.full <- c("Bromus carinatus", "Elymus glaucus", "Hordeum brachyantherum", "Nassella pulchra", "Avena fatua/barbata", "Bromus hordeaceus", "Hordeum murinum", "Vulpia myuros/bromoides")
+life.history <- rep(c("Perennial", "Annual"), each = 4)
+species.table <- tibble(species = unique(stg.long$species), species.full, life.history)
+species.table$species.full <- factor(species.table$species.full, levels = c("Bromus carinatus", "Elymus glaucus", "Hordeum brachyantherum", "Nassella pulchra", "Avena fatua/barbata", "Bromus hordeaceus", "Hordeum murinum", "Vulpia myuros/bromoides"))
+
+stg.long <- stg.long  %>% left_join(species.table, by = "species")
+cols <- brewer.pal(8, "Dark2")
+
+# each plot individually
+ggplot(stg.long, 
+       aes(x = data.collection.year, y = cover, 
+           color = species.full, shape = plot)) +
+  facet_grid(rows = vars(plant.year), cols = vars(treatment, site), scales = "free_y") +
+  geom_line(position = position_dodge(0.2)) +
+  theme_cw() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  xlab("Data collection year") + ylab("Percent cover by species") +
+  ylim(c(0, 100)) +
+  scale_color_manual(name = "", values = cols)
+ggsave("species-cover-by-plot.pdf", width = 8, height = 6, units = "in")
+
+# summarizing the replicates
+stg.summary <- stg.long %>%   
+        group_by(treatment, species, data.collection.year, site, plant.year) %>%
+        dplyr::summarise(
+                cover.mean = mean(cover),
+                cover.se = sd(cover)/sqrt(length(cover))) %>%
+        filter(treatment %in% c('N','tE'))
+
+# grouping the planting year into the same graphs
+ggplot(stg.summary, 
+       aes(x = data.collection.year, y = cover.mean, 
+           ymin = cover.mean - cover.se, ymax = cover.mean + cover.se,
+           color = species, shape = plant.year)) +
+        facet_grid(rows = vars(site), cols = vars(treatment), scales = "free_y") +
+        geom_point(position = position_dodge(0.2)) +
+        geom_errorbar(width = 0, position = position_dodge(0.2)) +
+        geom_line(position = position_dodge(0.2)) +
+        theme_cw()
+
+
+```
+
+

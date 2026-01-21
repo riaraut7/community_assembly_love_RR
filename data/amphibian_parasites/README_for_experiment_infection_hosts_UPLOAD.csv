@@ -1,0 +1,12 @@
+﻿variable,description
+host,unique identifier for each individual amphibian nested within replicates
+Replicate,unique identifier for each replicate within Treatment
+Treatment,"composition of amphibian host assemblage (B = Anaxyrus boreas, G = Taricha granulosa, P = Pseudacris regilla, R = Rana catesbeiana, T = Taricha torosa)"
+HostRichness,number of amphibian host species included
+HostCount,number of host individuals per microcosm
+HostSpp,"species of the individual host (B = Anaxyrus boreas, G = Taricha granulosa, P = Pseudacris regilla, R = Rana catesbeiana, T = Taricha torosa)"
+SVL,snout-vent length in mm of the host
+Mass,wet mass of the host 
+Parasite,species of parasite
+Count,number of parasite metacercariae detected within the individual host
+TotalAdded,number of infectious parasites (cercariae) added initially
