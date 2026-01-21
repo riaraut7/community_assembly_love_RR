@@ -1350,8 +1350,7 @@ evaluate_initial_final_difference <- function(
   #   apply(
   #   (final_abundances==0) & (initial_conditions==1), 1, sum, na.rm = TRUE))
 
-  cat('explicitly skipping num_losses_mean', '\n')
-  
+  cat('explicitly skipping num_losses_mean', '\n') 
   # Figure out abundance distribution in training
   abundance_final_skewness_mean = skewness(
     as.numeric(final_abundances), na.rm = TRUE)
