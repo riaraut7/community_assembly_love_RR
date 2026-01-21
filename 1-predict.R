@@ -1,3 +1,7 @@
+#Michael Lim, Ben Blonder 
+#Later minor edits by Ria Raut (post Jan 20th) 
+
+# Basic housekeeping ----- 
 # Setup output directory
 try(dir.create(file.path(getwd(), 'outputs/figures'), recursive = TRUE))
 try(dir.create(file.path(getwd(), 'outputs/statistical'), recursive = TRUE))
@@ -14,7 +18,7 @@ source('src/coexistence_love.R')
 # Perform analyses
 
 
-
+# Original datasets from Blonder, 2024 LOVE ---- 
 ### MULTIPLE ENVIRONMENTS
 set.seed(1)
 data_fruit_flies = read.csv('data/fruit_flies/data_fruit_flies.csv') %>%
@@ -139,5 +143,24 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 3)
 
+# Newer processed datasets ---- 
 
+set.seed(1)
+data_wildflowers = read.csv('data/wildflowers/data_wildflowers.csv')
 
+data_wildflowers <- data_wildflowers %>% 
+  select(-c("Plot", 'Harvest', 'Calculated_herbivory', 'n_herb_occurences', 'Measured_infection', 
+            'n_infect_occurences', "composition","Species_diversity", "Functional_composition" , "Sown_sla", "N", 
+            "Sown_mpd_sla", "Notes"))
+
+results = perform_prediction_experiment_full(
+  directory_string,
+  data_wildflowers,
+  dataset_name = 'wildflowers',
+  num_species = 6,
+  method_list = METHODS,
+  experimental_design_list = EXPERIMENTAL_DESIGNS,
+  num_replicates_in_data = 4)
+
+#shooot you get an error. Hmm maybe something to do with these variables being characters and not numbers? Not sure if that's true 
+#UGHHHH I ANGY 
