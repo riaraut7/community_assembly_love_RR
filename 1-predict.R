@@ -145,6 +145,7 @@ results = perform_prediction_experiment_full(
 
 # Newer processed datasets ---- 
 
+#WILDFLOWERS 
 set.seed(1)
 data_wildflowers = read.csv('data/wildflowers/data_wildflowers.csv') %>% 
   mutate(Block = factor(Block)) %>%
@@ -154,10 +155,7 @@ data_wildflowers = read.csv('data/wildflowers/data_wildflowers.csv') %>%
 data_wildflowers <- data_wildflowers %>% 
   select(-c("Plot", 'Harvest', 'Calculated_herbivory', 'n_herb_occurences', 'Measured_infection', 
             'n_infect_occurences', "composition","Species_diversity", "Functional_composition" , "Sown_sla", "N", 
-            "Sown_mpd_sla", "Notes", "Block", "X", "X.1"))
-
-# data_wildflowers_numeric <- data_wildflowers %>% 
-#   mutate_all(as.numeric)
+            "Sown_mpd_sla", "Notes", "Block"))
 
 results = perform_prediction_experiment_full(
   directory_string,
@@ -168,3 +166,29 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 4)
 
+
+#FLETCHER's GRASSLAND DIVERSITY -- UGGGG NOOO IT DOESNT WORKKK 
+set.seed(1)
+data_grassland_diversity <- read.csv('data/grassland_diversity/data_grassland_diversity.csv') %>% 
+  select(-plot.num)
+
+data_grassland_diversity <- data_grassland_diversity %>%
+  mutate(
+    across(
+      contains("outcome"),
+      as.numeric
+    )
+  )
+
+data_grassland_diversity <- data_grassland_diversity %>% 
+  mutate(weeded = as.factor(weeded), 
+         fertilized = as.factor(fertilized))
+
+results = perform_prediction_experiment_full(
+  directory_string,
+  data_grassland_diversity,
+  dataset_name = 'grassland_diversity',
+  num_species = 6,
+  method_list = METHODS,
+  experimental_design_list = EXPERIMENTAL_DESIGNS,
+  num_replicates_in_data = 5)
