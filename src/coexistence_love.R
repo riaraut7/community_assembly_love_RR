@@ -1170,10 +1170,10 @@ evaluate_mean_absolute_error_multivar <- function(
   # Get MAE with casewise mean
   mean_absolute_error = NA
   
-  cat("pred class IN EVAL_MEAN_ABS_ERROR:", class(values_predicted), "\n")
-  cat("pred dim:", paste(dim(values_predicted), collapse = " x "), "\n")
-  cat("truth class:", class(values_ground_truth), "\n")
-  cat("truth dim:", paste(dim(values_ground_truth), collapse = " x "), "\n")
+  # cat("pred class IN EVAL_MEAN_ABS_ERROR:", class(values_predicted), "\n")
+  # cat("pred dim:", paste(dim(values_predicted), collapse = " x "), "\n")
+  # cat("truth class:", class(values_ground_truth), "\n")
+  # cat("truth dim:", paste(dim(values_ground_truth), collapse = " x "), "\n")
   
   
   cat('Going to calculate mean abs error... >:( ', '\n')
@@ -1402,7 +1402,7 @@ perform_prediction_experiment_parallel_wrapper <- function(
   print("--------------------------------------------")
   cat(paste("Experiment: ",
             "\n - Index/Replicate: ", index, " - ", replicate_index,
-            "\n - Training #: ", num_train,
+            "\n - Training #: ", num_train, ' of ', existing_state_idxs, 
             "\n - Method & Design: ", method, " - ", experimental_design, "\n"
   ))
 

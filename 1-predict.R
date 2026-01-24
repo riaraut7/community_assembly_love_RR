@@ -192,3 +192,22 @@ results = perform_prediction_experiment_full(
   method_list = METHODS,
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 5)
+
+#JENA WILDFLOWERS
+set.seed(1)
+data_jena_wildflowers <- read.csv('data/jena_wildflowers/data_jena_wildflowers.csv') %>% 
+  select(-Experimenta_plot)
+
+results = perform_prediction_experiment_full(
+  directory_string,
+  data_jena_wildflowers,
+  dataset_name = 'jena_wildflowers',
+  num_species = 6,
+  method_list = METHODS,
+  experimental_design_list = EXPERIMENTAL_DESIGNS,
+  num_replicates_in_data = 5)
+
+
+
+
+
