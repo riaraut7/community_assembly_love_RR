@@ -45,8 +45,7 @@ if (!file.exists('outputs/figures'))
 
 fn_outputs = dir('outputs/statistical',pattern="result.*\\.csv",full.names = TRUE)
 
-df_all_raw = rbindlist(lapply(1:length(fn_outputs), function(i)
-{
+df_all_raw = rbindlist(lapply(1:length(fn_outputs), function(i){
   df_this = read.csv(fn_outputs[i])
   
   name_this = gsub("\\.csv","",gsub("results_","",basename(fn_outputs[i])))
@@ -54,7 +53,10 @@ df_all_raw = rbindlist(lapply(1:length(fn_outputs), function(i)
   df_this$name = name_this
   
   return(df_this)
-}))
+}), 
+  fill = TRUE
+
+)
 
 truncate_name <- function(fn) {gsub('\\.csv','',gsub('outputs/statistical/results_','',fn))}
 
