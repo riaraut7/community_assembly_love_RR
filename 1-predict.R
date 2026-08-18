@@ -219,6 +219,12 @@ results = perform_prediction_experiment_full(
 set.seed(1)
 data_jena_wildflowers <- read.csv('data/jena_wildflowers/data_jena_wildflowers.csv') %>% 
   select(-Experimenta_plot)
+summary(data_jena_wildflowers)
+
+data_jena_wildflowers[] <- lapply(data_jena_wildflowers, function(x) {
+  if (is.character(x)) factor(x) else x
+})
+
 results = perform_prediction_experiment_full(
   directory_string,
   data_jena_wildflowers,
@@ -230,18 +236,19 @@ results = perform_prediction_experiment_full(
 
 
 # SINGLE ENVIRONMENT 
-#amphibian parasites 
-set.seed(1)
-data_amphibian_parasites <- read.csv('data/amphibian_parasites/data_amphibian_parasites.csv') %>% 
-  select(-c(Carriers_added, row_ID))
-
-results = perform_prediction_experiment_full(
-  directory_string,
-  data_amphibian_parasites,
-  dataset_name = 'amphibian_parasites',
-  num_species = 4,
-  method_list = METHODS,
-  experimental_design_list = EXPERIMENTAL_DESIGNS,
-  num_replicates_in_data = 3)
-
-
+#amphibian parasites -- **wait, because there is no action in this, 
+#you can't actually run this code on that dataset. Let's just not run it 
+# set.seed(1)
+# data_amphibian_parasites <- read.csv('data/amphibian_parasites/data_amphibian_parasites.csv') %>% 
+#   select(-c(Carriers_added, row_ID))
+# 
+# results = perform_prediction_experiment_full(
+#   directory_string,
+#   data_amphibian_parasites,
+#   dataset_name = 'amphibian_parasites',
+#   num_species = 4,
+#   method_list = METHODS,
+#   experimental_design_list = EXPERIMENTAL_DESIGNS,
+#   num_replicates_in_data = 3)
+# 
+#whoa, all updated and successfully run, including fletcher data! 
