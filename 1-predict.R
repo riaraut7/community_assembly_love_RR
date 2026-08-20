@@ -3,14 +3,6 @@
 
 setwd('C:/Users/riara/OneDrive/All Documents/UCBerk Personal research work/LOVE/community_assembly_love_RR-NEW')
 
-#PLACEHOLDER CODE 
-# n_unique <- df %>%
-#   select(contains(".action")) %>%
-#   distinct() %>%
-#   nrow()
-# 
-# n_unique
-
 # Basic housekeeping. Run every time ----- 
 # Setup output directory
 
@@ -31,6 +23,7 @@ getwd()
 
 # Original datasets from Blonder, 2024 LOVE ---- 
 ### MULTIPLE ENVIRONMENTS
+  # fruit flies ---- 
 set.seed(1)
 data_fruit_flies = read.csv('data/fruit_flies/data_fruit_flies.csv') %>%
   mutate(food.initial = factor(food.initial)) %>%
@@ -61,7 +54,7 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 1) # in full dataset, this is maximum # of replicates, reflects the last 30 rows of the data file where there are varying abundances (which are ignored by this code run)
 
-
+  # ciliates ---- 
 set.seed(1)
 data_ciliates = read.csv('data/ciliates/data_ciliates.csv')
 results = perform_prediction_experiment_full(
@@ -89,6 +82,7 @@ results = perform_prediction_experiment_full(
 
 # SINGLE ENVIRONMENTS
 
+  # soil bacterial ---- 
 set.seed(1)
 data_soil_bacteria = read.csv('data/soil_bacteria/data_soil_bacteria.csv')
 
@@ -101,6 +95,7 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 2) # this is an underestimate but should not cause problems
 
+  #mouse gut ---- 
 set.seed(1)
 data_mouse_gut = read.csv('data/human_and_mouse_gut/data_mouse_gut.csv')
 results = perform_prediction_experiment_full(
@@ -112,6 +107,7 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 1)
 
+  #human gut ---- 
 set.seed(1)
 data_human_gut = read.csv('data/human_and_mouse_gut/data_human_gut.csv')
 results = perform_prediction_experiment_full(
@@ -123,7 +119,7 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 1)
 
-
+  #fly gut ---- 
 set.seed(1)
 data_fly_gut = read.csv('data/fly_gut/data_fly_gut.csv')
 results = perform_prediction_experiment_full(
@@ -135,6 +131,7 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 48)
 
+  #prairie plants ---- 
 set.seed(1)
 data_prairie_plants = read.csv('data/prairie_plants/data_prairie_plants.csv')
 results = perform_prediction_experiment_full(
@@ -146,6 +143,8 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 1)
 
+
+  # forest trees ---- 
 set.seed(1)
 data_forest_trees = read.csv('data/forest_trees/data_forest_trees.csv')
 
@@ -161,7 +160,7 @@ results = perform_prediction_experiment_full(
 # Newer processed datasets ---- 
 
 ### MULTIPLE ENVIRONMENTS 
-#WILDFLOWERS 
+  # wildflowers ----  
 set.seed(1)
 data_wildflowers = read.csv('data/wildflowers/data_wildflowers.csv') %>% 
   mutate(Block = factor(Block)) %>%
@@ -183,7 +182,7 @@ results = perform_prediction_experiment_full(
   num_replicates_in_data = 4)
 
 
-#FLETCHER's GRASSLAND DIVERSITY 
+  #grassland diversity ---- 
 set.seed(1)
 data_grassland_diversity <- read.csv('data/grassland_diversity/data_grassland_diversity.csv') %>% 
   select(-plot.num)
@@ -215,7 +214,7 @@ results = perform_prediction_experiment_full(
   experimental_design_list = EXPERIMENTAL_DESIGNS,
   num_replicates_in_data = 5)
 
-#JENA WILDFLOWERS
+  #jena wildflowers ---- 
 set.seed(1)
 data_jena_wildflowers <- read.csv('data/jena_wildflowers/data_jena_wildflowers.csv') %>% 
   select(-Experimenta_plot)
@@ -236,7 +235,9 @@ results = perform_prediction_experiment_full(
 
 
 # SINGLE ENVIRONMENT 
-#amphibian parasites -- **wait, because there is no action in this, 
+  #amphibian parasites ONLY FUNCTION G ----  
+
+#**wait, because there is no action in this, 
 #you can't actually run this code on that dataset. Let's just not run it 
 # set.seed(1)
 # data_amphibian_parasites <- read.csv('data/amphibian_parasites/data_amphibian_parasites.csv') %>% 
@@ -251,4 +252,27 @@ results = perform_prediction_experiment_full(
 #   experimental_design_list = EXPERIMENTAL_DESIGNS,
 #   num_replicates_in_data = 3)
 # 
-#whoa, all updated and successfully run, including fletcher data! 
+
+  #parasite host diversity ----
+set.seed(1)
+data_parasite_host_diversity = read.csv('data/parasite_host_diversity/data_parasite_host_diversity.csv')
+data_parasite_host_diversity <- data_parasite_host_diversity %>% 
+  select (c(ANVI.action, SEPA.action, TRFL.action, PAAN.action, SCIN.action, SOPI.action, 
+            ANVI.outcome, SEPA.outcome, TRFL.outcome, PAAN.outcome, SCIN.outcome, SOPI.outcome))
+
+data_parasite_host_diversity[] <- lapply(data_parasite_host_diversity, function(x) {
+  if (is.character(x)) factor(x) else x
+})
+
+results = perform_prediction_experiment_full(
+  directory_string,
+  data_parasite_host_diversity,
+  dataset_name = 'parasite_host_diversity',
+  num_species = 6,
+  method_list = METHODS,
+  experimental_design_list = EXPERIMENTAL_DESIGNS,
+  num_replicates_in_data = 1)
+
+  #tree colonization ONLY FUNCTION G ---- 
+set.seed(1)
+data_tree_colonization = read.csv('data/tree_colonization/data_tree_colonization.csv', stringsAsFactors = T)
