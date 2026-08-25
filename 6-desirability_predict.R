@@ -22,3 +22,18 @@ getwd()
 
 
 # Getting shannon diversity for all datasets ---- 
+
+
+  #wildflowers ---- 
+set.seed(1)
+data_wildflowers = read.csv('data/wildflowers/data_wildflowers.csv') %>% 
+  mutate(Block = factor(Block)) %>%
+  mutate(nitrogen.initial = factor(nitrogen.initial)) %>% 
+  mutate(fungicide.initial = factor(fungicide.initial))
+
+data_wildflowers <- data_wildflowers %>% 
+  select(-c("Plot", 'Harvest', 'Calculated_herbivory', 'n_herb_occurences', 'Measured_infection', 
+            'n_infect_occurences', "composition","Species_diversity", "Functional_composition" , "Sown_sla", "N", 
+            "Sown_mpd_sla", "Notes", "Block"))
+
+wildflowers_w_diversity <- add_shannon_diversity(data_wildflowers)
