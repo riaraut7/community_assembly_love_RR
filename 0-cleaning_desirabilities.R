@@ -3,7 +3,7 @@
 #one-time use 
 #Cleaning up all datasets and adding actual desirability columns 
 
-# Basic housekeeping -----
+#Basic housekeeping -----
 setwd('C:/Users/riara/OneDrive/All Documents/UCBerk Personal research work/LOVE/community_assembly_love_RR-NEW/data')
 
 library(tidyverse)
@@ -70,8 +70,121 @@ amp_parasites_new <- df_compact %>%
          cephalo.desirability = Cephalogonimus, 
          ribei.desirability = Ribeiroia) 
 amp_parasites_new <- amp_parasites_new %>% select(-Treatment)
-
+amp_parasites_new <- add_shannon_diversity(amp_parasites_new)
 write.csv(amp_parasites_new, 'amphibian_parasites/data_amphibian_parasites.csv', row.names = F)
+
+#california_grasses ---- 
+california_grasses <- read.csv('california_grasses/data_california_grasses.csv', stringsAsFactors = T)
+colnames(california_grasses)
+#change values for the water column, change name to water.initial 
+#only keep total_seeded.desirability column 
+#add shannon diversity index 
+
+unique(california_grasses$water)
+cal_grasses_treatments <- california_grasses %>% 
+  mutate(water = recode(water, 
+                        'No' = 'No', 
+                        'Fall 2011 1.25cm' = 'Yes', 
+                        'Winter 2013 1.45cm' = 'Yes', 
+                        'Winter 2014 1.27cm' = 'Yes', 
+                        'Winter 2014 1.27cm?' = 'Yes'
+                        ))
+cal_grasses_treatments <- cal_grasses_treatments %>% 
+  rename('water.initial' = 'water',
+         'total_seeded.desirability' = 'total.seeded')  %>% 
+  select(-c(treatment, total.n, total.i, problem.row, Comments))
+new_calgrasses_updated <- add_shannon_diversity(cal_grasses_treatments)
+
+write.csv(new_calgrasses_updated, 'california_grasses/data_california_grasses.csv', row.names = F)
+
+#ciliates ---- 
+ciliates <- read.csv('ciliates/data_ciliates.csv', stringsAsFactors = T)
+new_ciliates <- add_shannon_diversity(ciliates)
+
+write.csv(new_ciliates, 'ciliates/data_ciliates.csv', row.names = F)
+
+#fly_gut ---- 
+fly_gut <- read.csv('fly_gut/data_fly_gut.csv', stringsAsFactors = T)
+new_fly_gut <- add_shannon_diversity(fly_gut)
+write.csv(new_fly_gut, 'fly_gut/data_fly_gut.csv', row.names = F)
+
+#forest_trees ---- 
+forest_trees <- read.csv('forest_trees/data_forest_trees.csv', stringsAsFactors = T)
+new_forest_trees <- add_shannon_diversity(forest_trees)
+write.csv(new_forest_trees, 'forest_trees/data_forest_trees.csv', row.names = F)
+
+#fruit_flies ---- 
+fruit_flies <- read.csv('fruit_flies/data_fruit_flies.csv', stringsAsFactors = T)
+new_fruit_flies <- add_shannon_diversity(fruit_flies)
+write.csv(new_fruit_flies, 'fruit_flies/data_fruit_flies.csv', row.names = F)
+
+#grassland_annual_plants ---- 
+grassland_annual_plants <- read.csv('grassland_annual_plants/data_grassland_annual_plants.csv', stringsAsFactors = T)
+new_grassland_annual_plants <- add_shannon_diversity(grassland_annual_plants)
+write.csv(new_grassland_annual_plants, 'grassland_annual_plants/data_grassland_annual_plants.csv', row.names = F)
+
+#grassland_annual_plants_drought ---- 
+grassland_annual_plants_drought <- read.csv('grassland_annual_plants_drought/data_grassland_annual_plants_drought.csv', stringsAsFactors = T)
+new_grassland_annual_plants_drought <- add_shannon_diversity(grassland_annual_plants_drought)
+write.csv(new_grassland_annual_plants_drought, 'grassland_annual_plants_drought/data_grassland_annual_plants_drought.csv', row.names = F)
+#tbh I'm not sure what's happening with this dataset.... 
+
+#grassland_diversity ---- 
+grassland_diversity <- read.csv('grassland_diversity/data_grassland_diversity.csv', stringsAsFactors = T)
+grassland_diversity <- grassland_diversity %>% 
+  select(-plot.num) %>% 
+  rename('weeded.initial' = 'weeded',
+         'fertilized.initial' = 'fertilized')
+new_grassland_diversity <- add_shannon_diversity(grassland_diversity)
+write.csv(new_grassland_diversity, 'grassland_diversity/data_grassland_diversity.csv', row.names = F)
+
+#human_gut ---- 
+human_gut <- read.csv('human_and_mouse_gut/data_human_gut.csv', stringsAsFactors = T)
+new_human_gut <- add_shannon_diversity(human_gut)
+write.csv(new_human_gut, 'human_and_mouse_gut/data_human_gut.csv', row.names = F)
+
+#mouse_gut ---- 
+mouse_gut <- read.csv('human_and_mouse_gut/data_mouse_gut.csv', stringsAsFactors = T)
+new_mouse_gut <- add_shannon_diversity(mouse_gut)
+write.csv(new_mouse_gut, 'human_and_mouse_gut/data_mouse_gut.csv', row.names = F)
+
+
+#jena_flowers ---- 
+jena_wildflowers <- read.csv('jena_wildflowers/data_jena_wildflowers.csv', stringsAsFactors = T)
+jena_wildflowers <- jena_wildflowers %>% select(-Experimenta_plot)
+colnames(jena_wildflowers)
+new_jena_wildflowers <- add_shannon_diversity(jena_wildflowers)
+write.csv(new_jena_wildflowers, 'jena_wildflowers/data_jena_wildflowers.csv', row.names = F)
+
+#parasite_host_diversity ---- 
+#cols to keep: 
+#S5: Parasite richness standardized to 5 random plants sampled within the plot (Desirability Variable)
+#percov: percent cover within the plot (Desirability Varaibility)
+parasite_host_diversity <- read.csv('parasite_host_diversity/data_parasite_host_diversity.csv', stringsAsFactors = T)
+colnames(parasite_host_diversity)
+new_parhost_diversity <- parasite_host_diversity %>% 
+  rename(parasite_richness.desirability = S5, 
+         percent_cover.desirability = percov)
+new_parhost_diversity <- new_parhost_diversity %>% 
+  select(ANVI.action, SEPA.action, TRFL.action, PAAN.action, SCIN.action, SOPI.action,
+         ANVI.outcome, SEPA.outcome, TRFL.outcome, PAAN.outcome, SCIN.outcome, SOPI.outcome, 
+         parasite_richness.desirability, percent_cover.desirability)
+new_parhost_diversity <- add_shannon_diversity(new_parhost_diversity)
+colnames(new_parhost_diversity)
+
+write.csv(new_parhost_diversity, 'parasite_host_diversity/data_parasite_host_diversity.csv', row.names = F)
+
+#prairie_plants ---- 
+prairie_plants <- read.csv('prairie_plants/data_prairie_plants.csv', stringsAsFactors = T)
+colnames(prairie_plants)
+new_prairie_plants <- add_shannon_diversity(prairie_plants)
+write.csv(new_prairie_plants, 'prairie_plants/data_prairie_plants.csv', row.names = F)
+
+#soil_bacteria ---- 
+soil_bacteria <- read.csv('soil_bacteria/data_soil_bacteria.csv', stringsAsFactors = T)
+colnames(prairie_plants)
+new_soil_bacteria <- add_shannon_diversity(soil_bacteria)
+write.csv(new_soil_bacteria, 'soil_bacteria/data_soil_bacteria.csv', row.names = F)
 
 #tree_colonization ----- 
 #desirability cols to keep: 
@@ -96,21 +209,26 @@ new_tree_colonization <- new_tree_colonization %>%
 new_tree_colonization <- add_shannon_diversity(new_tree_colonization)
 write.csv(new_tree_colonization, 'tree_colonization/data_tree_colonization.csv', row.names = F)
 
+#wildflowers ---- 
+wildflowers <- read.csv('wildflowers/data_wildflowers.csv', stringsAsFactors = T)
+colnames(wildflowers)
+ 
+#keep calculated_herbivory as herbivory.desirability 
+#keep measured_infection as infection.desirability 
+#keep sown_sla as direct_sown_sla.desirability
+#take out plot and harvest 
+#take out species diversity, species diversity, functional composition
+new_wildflowers <- wildflowers %>% 
+  rename(
+    'herbivory.desirability' = 'Calculated_herbivory', 
+    'infection.desirability' = 'Measured_infection', 
+    'direct_sown_sla.desirability' = 'Sown_sla'
+  )
 
-#parasite_host_diversity ---- 
-#cols to keep: 
-#S5: Parasite richness standardized to 5 random plants sampled within the plot (Desirability Variable)
-#percov: percent cover within the plot (Desirability Varaibility)
-parasite_host_diversity <- read.csv('parasite_host_diversity/data_parasite_host_diversity.csv', stringsAsFactors = T)
-colnames(parasite_host_diversity)
-new_parhost_diversity <- parasite_host_diversity %>% 
-  rename(parasite_richness.desirability = S5, 
-         percent_cover.desirability = percov)
-new_parhost_diversity <- new_parhost_diversity %>% 
-  select(ANVI.action, SEPA.action, TRFL.action, PAAN.action, SCIN.action, SOPI.action,
-         ANVI.outcome, SEPA.outcome, TRFL.outcome, PAAN.outcome, SCIN.outcome, SOPI.outcome, 
-         parasite_richness.desirability, percent_cover.desirability)
-new_parhost_diversity <- add_shannon_diversity(new_parhost_diversity)
-colnames(new_parhost_diversity)
+colnames(new_wildflowers)
 
-write.csv(new_parhost_diversity, 'parasite_host_diversity/data_parasite_host_diversity.csv', row.names = F)
+new_wildflowers <- new_wildflowers %>% 
+  select( -c (Plot, Harvest, n_herb_occurences, n_infect_occurences, 
+              Block, composition, Species_diversity, N, Functional_composition, Sown_mpd_sla, Notes))
+new_wildflowers <- add_shannon_diversity(new_wildflowers)
+write.csv(new_wildflowers, 'wildflowers/data_wildflowers.csv', row.names = F)
