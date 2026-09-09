@@ -24,7 +24,7 @@ split_dataset <- function(data, training_size) {
   list(training_data = training_data, testing_data = testing_data)
 }
 #actual function g function 
-fit_rf_desirabilities <- function(training_dataset) { #fughh this doesn't work 
+fit_rf_desirability <- function(training_dataset) { #fughh this doesn't work 
   #get outcomes cols 
   data_outcomes <- training_dataset %>% 
     dplyr::select(contains(".outcome"))
@@ -58,11 +58,11 @@ forest_trees <- read.csv('data/forest_trees/data_forest_trees.csv', stringsAsFac
 forest_datasets <- split_dataset(forest_trees, 500)
 training_dataset <- forest_datasets$training_data
 
-forest_rf <- fit_rf_desirabilities(training_dataset)
+forest_rf <- fit_rf_desirability(training_dataset)
 
 #STEP 2a: Getting predictions, groundtruth vals, and mae ---- 
 #get comparison tables -- both functions output a single table with outcome columns and desirabilities 
-get_predictions_table <- function(rf_model, testing_dataset, des_type) {
+get_predictions_table <- function(rf_model, testing_dataset) {
   predictions_raw <- randomForestSRC::predict.rfsrc(rf_model, testing_dataset) 
   predicted_actual <- as.data.frame(predictions_raw$predicted) 
   colnames(predicted_actual) <- rf_model$yvar.names
@@ -72,7 +72,7 @@ get_predictions_table <- function(rf_model, testing_dataset, des_type) {
 #rn it gets all desirability columns -- change it to take desirability, then select 
 #for string(desirability) in the col name. Do that once you change the rf to fit per 
 #des index, but dwai for now 
-get_groundtruth_table <- function (testing_dataset, des_type) {
+get_groundtruth_table <- function (testing_dataset) {
   data_desirability <- testing_dataset %>% 
     dplyr::select(contains(".desirability")) %>% 
     tidyr::drop_na()
@@ -107,14 +107,36 @@ forest_mae <- mean_absolute_error(forest_predictions, forest_ground_truth)
 #IT WORKED! 
 
 
-#STEP 3a: Replicating multiple times and across training sizes ---- 
-replicate_ten_times <- function(data, training_size) {
+#STEP 3a: Replicating per desirability trait ---- 
+replicate_per_des_trait <- function(dataset, training_size) {
   
+  #do this for each dataset column 
+  split_data <- split_dataset(dataset, training_size) 
+  training_data <- split_data$training_data 
+  testing_data <- split_data$testing_data 
+  
+  specific_rf_model <- fit_rf_desirability(training_data) 
+  
+  predictions_table <- get_predictions_table(specific_rf_model, testing_data)
+  groundtruth_table <- get_groundtruth_table(testing_data) 
+  
+  specific_mae <- mean_absolute_error(predictions_table, groundtruth_table)
+  return(specific_mae)
 }
-  
-change_training_sizes <- function () { 
+
+#STEP 3b: testing the 3a functions ---- 
+forest_trees <- read.csv('data/forest_trees/data_forest_trees.csv', stringsAsFactors = T)
+
+forest_mae <- replicate_per_des_trait(forest_trees, 500)
+
+
+#STEP 4a: Replicate multiple times and across training sizes ---- 
+replicate_ten_times <- function(data, training_size) {
+    
   }
-#STEP 4a: Replicating 
+
+change_training_sizes <- function () { 
+}
   
 
 #Ignore these functions for now and first let's test the top ---------- 
