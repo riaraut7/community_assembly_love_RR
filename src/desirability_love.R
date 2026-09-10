@@ -1,7 +1,5 @@
 #Ria Raut 
 #August 25th, 2026 
-setwd('C:/Users/riara/OneDrive/All Documents/UCBerk Personal research work/LOVE/community_assembly_love_RR-NEW')
-getwd()
 
 #Parameters to define and libraries to load ----- 
 directory_string <- 'C:/Users/riara/OneDrive/All Documents/UCBerk Personal research work/LOVE/community_assembly_love_RR-NEW/outputs_desirability'
@@ -56,13 +54,6 @@ fit_rf_desirability <- function(training_dataset) { #fughh this doesn't work
   return(rf_outcome_desirability)
 }
 
-#STEP 1b: testing the 1a functions ---- 
-forest_trees <- read.csv('data/forest_trees/data_forest_trees.csv', stringsAsFactors = T)
-forest_datasets <- split_dataset(forest_trees, 500)
-training_dataset <- forest_datasets$training_data
-
-forest_rf <- fit_rf_desirability(training_dataset)
-
 #STEP 2a: Getting predictions, groundtruth vals, and mae ---- 
 #get comparison tables -- both functions output a single table with outcome columns and desirabilities 
 get_predictions_table <- function(rf_model, testing_dataset) {
@@ -97,17 +88,6 @@ mean_absolute_error <- function(pred, obs) {
   
   return(mae)
 }
-
-#STEP 2b: testing the 2a functions ---- 
-testing_dataset <- forest_datasets$testing_data
-
-forest_predictions <- get_predictions_table(forest_rf, testing_dataset)
-class(forest_predictions)
-forest_ground_truth <- get_groundtruth_table(testing_dataset)
-
-forest_mae <- mean_absolute_error(forest_predictions, forest_ground_truth)
-
-#IT WORKED! 
 
 #STEP 3a: Replicating per desirability trait and also n times ---- 
 replicate_per_des_trait <- function(dataset, training_size) {
@@ -151,17 +131,6 @@ replicate_n_times <- function(dataset, training_size, n_reps) {
 }
 
 
-#STEP 3b: testing the 3a functions ---- 
-forest_trees <- read.csv('data/forest_trees/data_forest_trees.csv', stringsAsFactors = T)
-wildflowers <- read.csv('data/wildflowers/data_wildflowers.csv', stringsAsFactors = T)
-
-forest_mae <- replicate_per_des_trait(forest_trees, 500)
-wildflowers_mae <- replicate_per_des_trait(wildflowers, 500)
-class(forest_mae)
-
-replicated_forest_mae <- replicate_n_times(forest_trees, 500, 15)
-replicated_wildflowers_mae <- replicate_n_times(wildflowers, 500, 15)
-
 #STEP 4a: Replicate multiple times and across training sizes and make it into a csv ---- 
 
 #has both functions for 3a nested within in 
@@ -191,20 +160,49 @@ csv_this <- function (results_df, dataset_name) {
   }
 }  
 
-#STEP 4b: testing 4a functions ----- 
-forest_mae_table <- replicate_all_across_training_sizes(forest_trees, training_sizes_list, 10)
-
-dataset_name <- string_this(forest_trees)
-csv_this(forest_mae_table, dataset_name)
-
 #STEP 5a: pulling all together into a final function ---- 
 function_g <- function (dataset, training_sizes, n_reps, dataset_name) {
   results_df <- replicate_all_across_training_sizes(dataset, training_sizes, n_reps)
   csv_this(results_df, dataset_name)
 }
 
-#STEP 5b: testing 5a functions ----- 
-tree_colonization <- read.csv('data/tree_colonization/data_tree_colonization.csv', stringsAsFactors =  T)
 
-dataset_name <- string_this(tree_colonization)
-function_g(tree_colonization, training_sizes_list, 10, dataset_name)
+
+# #STEP 1b: testing the 1a functions ---- 
+# forest_trees <- read.csv('data/forest_trees/data_forest_trees.csv', stringsAsFactors = T)
+# forest_datasets <- split_dataset(forest_trees, 500)
+# training_dataset <- forest_datasets$training_data
+# 
+# forest_rf <- fit_rf_desirability(training_dataset)
+# 
+# #STEP 2b: testing the 2a functions ---- 
+# testing_dataset <- forest_datasets$testing_data
+# 
+# forest_predictions <- get_predictions_table(forest_rf, testing_dataset)
+# class(forest_predictions)
+# forest_ground_truth <- get_groundtruth_table(testing_dataset)
+# 
+# forest_mae <- mean_absolute_error(forest_predictions, forest_ground_truth)
+# 
+# #IT WORKED! 
+# 
+# #STEP 3b: testing the 3a functions ---- 
+# forest_trees <- read.csv('data/forest_trees/data_forest_trees.csv', stringsAsFactors = T)
+# wildflowers <- read.csv('data/wildflowers/data_wildflowers.csv', stringsAsFactors = T)
+# 
+# forest_mae <- replicate_per_des_trait(forest_trees, 500)
+# wildflowers_mae <- replicate_per_des_trait(wildflowers, 500)
+# class(forest_mae)
+# 
+# replicated_forest_mae <- replicate_n_times(forest_trees, 500, 15)
+# replicated_wildflowers_mae <- replicate_n_times(wildflowers, 500, 15)
+# 
+# #STEP 4b: testing 4a functions ----- 
+# forest_mae_table <- replicate_all_across_training_sizes(forest_trees, training_sizes_list, 10)
+# 
+# dataset_name <- string_this(forest_trees)
+# csv_this(forest_mae_table, dataset_name)
+# 
+# 
+# #STEP 5b: testing 5a functions ----- 
+# #all code moved to the 6-desirability_predict script 
