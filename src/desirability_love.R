@@ -3,6 +3,9 @@
 setwd('C:/Users/riara/OneDrive/All Documents/UCBerk Personal research work/LOVE/community_assembly_love_RR-NEW')
 getwd()
 
+#Parameters to define and libraries to load ----- 
+directory_string <- 'C:/Users/riara/OneDrive/All Documents/UCBerk Personal research work/LOVE/community_assembly_love_RR-NEW/outputs_desirability'
+training_sizes_list <- c(20, 50, 80, 150, 400, 800, 1200, 1500)
 library(randomForestSRC)
 library(tidyverse)
 
@@ -106,61 +109,102 @@ forest_mae <- mean_absolute_error(forest_predictions, forest_ground_truth)
 
 #IT WORKED! 
 
-
-#STEP 3a: Replicating per desirability trait ---- 
+#STEP 3a: Replicating per desirability trait and also n times ---- 
 replicate_per_des_trait <- function(dataset, training_size) {
   
-  #do this for each dataset column 
-  split_data <- split_dataset(dataset, training_size) 
-  training_data <- split_data$training_data 
-  testing_data <- split_data$testing_data 
+  desirability_cols <- names(dataset)[grepl(".desirability", names(dataset))]
   
-  specific_rf_model <- fit_rf_desirability(training_data) 
-  
-  predictions_table <- get_predictions_table(specific_rf_model, testing_data)
-  groundtruth_table <- get_groundtruth_table(testing_data) 
-  
-  specific_mae <- mean_absolute_error(predictions_table, groundtruth_table)
-  return(specific_mae)
+  results <- purrr::map_dfr(desirability_cols, function(trait) {
+    
+    # keep this trait's column, drop the other .desirability columns
+    other_traits <- setdiff(desirability_cols, trait)
+    trait_dataset <- dataset %>% dplyr::select(-dplyr::all_of(other_traits))
+    
+    split_data <- split_dataset(trait_dataset, training_size) 
+    training_data <- split_data$training_data 
+    testing_data <- split_data$testing_data 
+    
+    specific_rf_model <- fit_rf_desirability(training_data) 
+    
+    predictions_table <- get_predictions_table(specific_rf_model, testing_data)
+    groundtruth_table <- get_groundtruth_table(testing_data) 
+    
+    specific_mae <- mean_absolute_error(predictions_table, groundtruth_table)
+    
+    data.frame(trait = trait, mae = specific_mae)
+  })
+  wide_results <- tidyr::pivot_wider(results, names_from = trait, values_from = mae)
+  return(wide_results)
 }
+
+replicate_n_times <- function(dataset, training_size, n_reps) {
+  
+  #getting a results table 
+  results <- purrr::map_dfr(1:n_reps, function(i) {
+    replicate_per_des_trait(dataset, training_size)
+  })
+  
+  results <- results %>% 
+    dplyr::mutate(training_size = training_size)
+  
+  return(results)
+}
+
 
 #STEP 3b: testing the 3a functions ---- 
 forest_trees <- read.csv('data/forest_trees/data_forest_trees.csv', stringsAsFactors = T)
+wildflowers <- read.csv('data/wildflowers/data_wildflowers.csv', stringsAsFactors = T)
 
 forest_mae <- replicate_per_des_trait(forest_trees, 500)
+wildflowers_mae <- replicate_per_des_trait(wildflowers, 500)
+class(forest_mae)
 
+replicated_forest_mae <- replicate_n_times(forest_trees, 500, 15)
+replicated_wildflowers_mae <- replicate_n_times(wildflowers, 500, 15)
 
-#STEP 4a: Replicate multiple times and across training sizes ---- 
-replicate_ten_times <- function(data, training_size) {
-    
+#STEP 4a: Replicate multiple times and across training sizes and make it into a csv ---- 
+
+#has both functions for 3a nested within in 
+replicate_all_across_training_sizes <- function(dataset, training_sizes, n_reps) {
+  
+  # only keep training sizes smaller than the dataset itself
+  valid_sizes <- training_sizes[training_sizes < nrow(dataset)]
+  
+  results <- purrr::map_dfr(valid_sizes, function(size) {
+    replicate_n_times(dataset, size, n_reps)
+  })
+  
+  return(results)
+}
+
+#to get the dataset name for when you write up your results as a csv 
+string_this <- function(x) {
+  deparse(substitute(x))
+}
+
+#make your results into a csv! 
+csv_this <- function (results_df, dataset_name) {
+  if (!is.null(results_df)) {
+    write.csv(
+      results_df, file=sprintf('%s/results_%s.csv', directory_string, dataset_name), 
+      row.names=FALSE)
   }
+}  
 
-change_training_sizes <- function () { 
-}
-  
+#STEP 4b: testing 4a functions ----- 
+forest_mae_table <- replicate_all_across_training_sizes(forest_trees, training_sizes_list, 10)
 
-#Ignore these functions for now and first let's test the top ---------- 
-repeat_across_training_datasets <- function (data) { 
-    outcome_cols <- grep("\\.outcome$", names(data), value = TRUE)
-    combo_key <- do.call(paste, c(data[, outcome_cols, drop = FALSE], sep = "___"))
-    n_unique <- length(unique(combo_key))
+dataset_name <- string_this(forest_trees)
+csv_this(forest_mae_table, dataset_name)
 
-    n_list <- c(10, 14, 21, 30, 43, 62, 89)
-
-    for (i in n_list[n_list < n_unique]) {
-      # fit training RF model, test against testing dataset, get MAE using mean_absolute_error_casewise_mean 
-      #add this to a collective dataset 
-      #do this ten times 
-    }
-  
-  #for each split, builds rf model and gets MAE_values 
-  #replicates it ten times and makes a .matrix of desirability you tested, n used, n cols actually used, MAE for desirability 1 (with names), MAE for desirability 2 
-  
-  
-}
-get_final_results_csv <- function (dataset) {
-  #get value from repeat_across_training_datasets and put into a csv  
+#STEP 5a: pulling all together into a final function ---- 
+function_g <- function (dataset, training_sizes, n_reps, dataset_name) {
+  results_df <- replicate_all_across_training_sizes(dataset, training_sizes, n_reps)
+  csv_this(results_df, dataset_name)
 }
 
+#STEP 5b: testing 5a functions ----- 
+tree_colonization <- read.csv('data/tree_colonization/data_tree_colonization.csv', stringsAsFactors =  T)
 
-
+dataset_name <- string_this(tree_colonization)
+function_g(tree_colonization, training_sizes_list, 10, dataset_name)
