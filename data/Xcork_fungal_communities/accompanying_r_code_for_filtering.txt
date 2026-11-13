@@ -1,0 +1,26 @@
+PMC_meta <- read_xlsx("Dati_ultime_analisi/Metadati PMC.xlsx") %>%
+  clean_names() %>%
+  filter(id_campione != "PC3AM") %>%
+  filter(id_campione != "PD9AC") %>%
+  filter(id_campione != "PC4AM") %>%
+  filter(id_campione != "FD10BM") %>%
+  filter(id_campione != "PC4AP") %>%
+  filter(id_campione != "FC9BM") %>%
+  filter(id_campione != "FC7AM") %>%
+  filter(id_campione != "FC7BP") %>%
+  filter(id_campione != "FC8BP") %>%
+  filter(id_campione != "FC9BP")
+
+
+PMC_table <- read_xlsx("Dati_ERRATA_CORRIGE/Tabella piastre TCA1_post allineamenti.xlsx") %>%
+  clean_names() %>%
+  filter(id_campione != "PC3AM") %>%
+  filter(id_campione != "PD9AC") %>%
+  filter(id_campione != "PC4AM") %>%
+  filter(id_campione != "FD10BM") %>%
+  filter(id_campione != "PC4AP") %>%
+  filter(id_campione != "FC9BM") %>%
+  filter(id_campione != "FC7AM") %>%
+  filter(id_campione != "FC7BP") %>%
+  filter(id_campione != "FC8BP") %>%
+  filter(id_campione != "FC9BP")

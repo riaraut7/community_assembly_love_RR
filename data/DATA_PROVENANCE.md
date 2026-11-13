@@ -53,6 +53,8 @@ Venturelli, Ophelia S., et al. "Deciphering microbial interactions in synthetic 
 https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003388
 Stein, Richard R., et al. "Ecological modeling from time-series inference: insight into dynamics and stability of intestinal microbiota." PLoS computational biology 9.12 (2013): e1003388.
 
+
+
 \###prairie\_plants
 https://cedarcreek.umn.edu/research/experiments/e120
 Tilman, David, et al. "The influence of functional diversity and composition on ecosystem processes." Science 277.5330 (1997): 1300-1302.
@@ -65,11 +67,11 @@ Friedman, Jonathan, Logan M. Higgins, and Jeff Gore. "Community structure follow
 
 
 
-COLLECTED POST-2024 
+COLLECTED POST-2024
 
-\###grassland\_diversity -- DATA OBTAINED THROUGH PERSONAL COMMUNICATION, NOT PUBLICLY AVAILABLE. 
+\###grassland\_diversity -- DATA OBTAINED THROUGH PERSONAL COMMUNICATION, NOT PUBLICLY AVAILABLE.
 
-Based on data used in: https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/ecy.1796 
+Based on data used in: https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/ecy.1796
 
 Heckman, Robert W., et al. "Effects of native diversity, soil nutrients, and natural enemies on exotic invasion in experimental plant communities." Ecology 98.5 (2017): 1409-1418.
 
@@ -79,7 +81,7 @@ Heckman, Robert W., et al. "Effects of native diversity, soil nutrients, and nat
 
 https://doi.pangaea.de/10.1594/PANGAEA.866358
 
-Weigelt, Alexandra; Ebeling, Anne; Roscher, Christiane; Temperton, Vicky M; De Luca, Enrica; Wagg, Cameron; Buchmann, Nina; Fischer, Markus; Scherer-Lorenzen, Michael; Schmid, Bernhard; Schulze, Ernst-Detlef; Weisser, Wolfgang W; Luo, Guangjuan; Meyer, Sebastian Tobias (2016): Collection of aboveground community and species-specific plant biomass from the Jena Experiment (time series since 2002) \[dataset publication series]. PANGAEA, https://doi.org/10.1594/PANGAEA.866358 
+Weigelt, Alexandra; Ebeling, Anne; Roscher, Christiane; Temperton, Vicky M; De Luca, Enrica; Wagg, Cameron; Buchmann, Nina; Fischer, Markus; Scherer-Lorenzen, Michael; Schmid, Bernhard; Schulze, Ernst-Detlef; Weisser, Wolfgang W; Luo, Guangjuan; Meyer, Sebastian Tobias (2016): Collection of aboveground community and species-specific plant biomass from the Jena Experiment (time series since 2002) \[dataset publication series]. PANGAEA, https://doi.org/10.1594/PANGAEA.866358
 
 
 
@@ -99,17 +101,11 @@ Stuble, Katharine L., et al. "Outside the envelope: rare events disrupt the rela
 
 
 
-
-
 \###amphibian\_parasites
 
-Publication: https://royalsocietypublishing.org/rspb/article/286/1902/20190260/85042/Community-disassembly-and-disease-realistic-but#d4874900e1 
+Publication: https://royalsocietypublishing.org/rspb/article/286/1902/20190260/85042/Community-disassembly-and-disease-realistic-but#d4874900e1
 
-Dataset: https://datadryad.org/dataset/doi:10.5061/dryad.5649t65 
+Dataset: https://datadryad.org/dataset/doi:10.5061/dryad.5649t65
 
 Pieter T. J. Johnson, Dana M. Calhoun, Tawni Riepe, Travis McDevitt-Galles, Janet Koprivnikar; Community disassembly and disease: realistic—but not randomized—biodiversity losses enhance parasite transmission. Proc Biol Sci 1 May 2019; 286 (1902): 20190260.
-
-
-
-
 

@@ -21,6 +21,12 @@ tree_colonization <- read.csv('data/tree_colonization/data_tree_colonization.csv
 dataset_name <- string_this(tree_colonization)
 function_g(tree_colonization, training_sizes_list, 10, dataset_name)
 
+#tree_col_again_testing_something_ignore this 
+# tree_colonization2 <- read.csv('data/tree_colonization/data_tree_colonization.csv', stringsAsFactors =  T)
+# dataset_name <- string_this(tree_colonization2)
+# function_g(tree_colonization2, training_sizes_list, 10, dataset_name)
+
+
 #wildflowers 
 wildflowers <- read.csv('data/wildflowers/data_wildflowers.csv', stringsAsFactors =  T)
 dataset_name <- string_this(wildflowers)

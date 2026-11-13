@@ -1,5 +1,6 @@
 #Ria Raut, Jan 20th, 2026 
 #plotting script, remade 
+#Based on Michael Lim and Ben Blonder's 2-plot, see og LOVE repo 
 
 #housekeeping ---- 
 library(ggplot2)
