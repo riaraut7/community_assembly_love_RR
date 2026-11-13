@@ -54,7 +54,7 @@ fit_rf_desirability <- function(training_dataset) { #fughh this doesn't work
   return(rf_outcome_desirability)
 }
 
-#STEP 2a: Getting predictions, groundtruth vals, and mae ---- 
+#STEP 2a: Getting predictions, groundtruth vals, mae, and visuals  ---- 
 #get comparison tables -- both functions output a single table with outcome columns and desirabilities 
 get_predictions_table <- function(rf_model, testing_dataset) {
   predictions_raw <- randomForestSRC::predict.rfsrc(rf_model, testing_dataset) 
@@ -79,7 +79,9 @@ mean_absolute_error <- function(pred, obs) {
   obs  <- obs[[1]]
   if (length(as.numeric(pred)) == length(as.numeric(obs)))
   {
-    mae = mean(abs(as.numeric(pred) - as.numeric(obs)), na.rm=T)
+    just_mean = mean(abs(as.numeric(pred)), na.rm = T)
+    mae_unstandardized = mean(abs(as.numeric(pred) - as.numeric(obs)), na.rm=T)
+    mae = mae_unstandardized/just_mean
   }
   else
   {
@@ -87,6 +89,13 @@ mean_absolute_error <- function(pred, obs) {
   }
   
   return(mae)
+}
+
+visualizing_similarities <- funct(pred, obs) {
+  pred <- pred[[1]]
+  obs  <- obs[[1]]
+  graph <- ggplot(aes(x = pred, y = obs)) + geom_point()
+  return(graph)
 }
 
 #STEP 3a: Replicating per desirability trait and also n times ---- 
