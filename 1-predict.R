@@ -276,3 +276,24 @@ results = perform_prediction_experiment_full(
   #tree colonization ONLY FUNCTION G ---- 
 set.seed(1)
 data_tree_colonization = read.csv('data/tree_colonization/data_tree_colonization.csv', stringsAsFactors = T)
+
+#netherland_grasses ----
+set.seed(1)
+data_netherland_grasses <- read.csv('data/netherland_grasses/netherland_grasses_data.csv', stringsAsFactors = T) %>% 
+  mutate(plot = factor(plot)) %>% 
+  mutate(subplot = factor(subplot)) %>% 
+  mutate(forb = factor(forb)) %>% 
+  mutate(community = factor(community)) %>% 
+  mutate(legacy.initial = factor(legacy.initial))
+summary(data_netherland_grasses)
+
+#24 species 
+#2 treatments 
+results = perform_prediction_experiment_full(
+  directory_string,
+  data_netherland_grasses,
+  dataset_name = 'netherland_grasses',
+  num_species = 24,
+  method_list = METHODS,
+  experimental_design_list = EXPERIMENTAL_DESIGNS,
+  num_replicates_in_data = 32)

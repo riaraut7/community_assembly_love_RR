@@ -243,4 +243,5 @@ greenhouse_cats <- read.csv('greenhouse_cats/greenhouse_cats_data.csv', stringsA
 greenhouse_cats <- greenhouse_cats %>% 
   rename_with(~ paste0(.x, ".outcome"), 2:6) %>% 
   select(-X)
-  
+new_greenhouse_cats <- add_shannon_diversity(greenhouse_cats)
+write.csv(new_greenhouse_cats, 'greenhouse_cats/greenhouse_cats_data.csv', row.names = F)  
