@@ -234,5 +234,13 @@ new_wildflowers <- add_shannon_diversity(new_wildflowers)
 write.csv(new_wildflowers, 'wildflowers/data_wildflowers.csv', row.names = F)
 
 #netherland_grasses 
+netherland_grasses <- read.csv('netherland_grasses/netherland_grasses_data.csv', stringsAsFactors = F)
+new_netherland_grasses <- add_shannon_diversity(netherland_grasses)
+write.csv(new_netherland_grasses, 'netherland_grasses/netherland_grasses.data.csv', row.names = F)
 
 #greenhouse_cats
+greenhouse_cats <- read.csv('greenhouse_cats/greenhouse_cats_data.csv', stringsAsFactors = F)
+greenhouse_cats <- greenhouse_cats %>% 
+  rename_with(~ paste0(.x, ".outcome"), 2:6) %>% 
+  select(-X)
+  

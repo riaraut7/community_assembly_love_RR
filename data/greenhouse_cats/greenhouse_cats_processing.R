@@ -91,7 +91,7 @@ final_combined <- combined_data %>%
   mutate(across(everything(), ~replace_na(.x, 0))) %>% 
   filter(!if_all(where(is.numeric), ~ .x == 0))
 
-write.csv(final_combined, 'data/Xgreenhouse_cats/data_greenhouse_cats.csv')
+write.csv(final_combined, 'data/Xgreenhouse_cats/greenhouse_cats_data.csv')
 
 #1, wait....maybe abort? Bc we don't know which of these measured abundances come from the same pot..
 #what is this experimental design bro... 
