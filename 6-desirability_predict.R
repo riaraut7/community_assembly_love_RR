@@ -77,8 +77,12 @@ ciliates <- read.csv('data/ciliates/data_ciliates.csv', stringsAsFactors =  T)
 dataset_name <- string_this(ciliates)
 function_g(ciliates, training_sizes_list, 10, dataset_name)
 
+#netherland_grasses 
+netherland_grasses <- read.csv('data/netherland_grasses/data_netherland_grasses.csv', stringsAsFactors = T)
+dataset_name <- string_this(netherland_grasses)
+function_g(netherland_grasses, training_sizes_list, 10, dataset_name)
 
-
-
-
-
+#greenhouse_cats
+greenhouse_cats <- read.csv('data/greenhouse_cats/data_greenhouse_cats.csv', stringsAsFactors = T)
+dataset_name <- string_this(greenhouse_cats)
+function_g(greenhouse_cats, training_sizes_list, 10, dataset_name)

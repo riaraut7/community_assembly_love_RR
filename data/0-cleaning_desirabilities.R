@@ -233,15 +233,22 @@ new_wildflowers <- new_wildflowers %>%
 new_wildflowers <- add_shannon_diversity(new_wildflowers)
 write.csv(new_wildflowers, 'wildflowers/data_wildflowers.csv', row.names = F)
 
-#netherland_grasses 
-netherland_grasses <- read.csv('netherland_grasses/netherland_grasses_data.csv', stringsAsFactors = F)
+#netherland_grasses ---- 
+netherland_grasses <- read.csv('netherland_grasses/data_netherland_grasses.csv', stringsAsFactors = F)
 new_netherland_grasses <- add_shannon_diversity(netherland_grasses)
-write.csv(new_netherland_grasses, 'netherland_grasses/netherland_grasses.data.csv', row.names = F)
+#also need to take out all the other columns! 
 
-#greenhouse_cats
-greenhouse_cats <- read.csv('greenhouse_cats/greenhouse_cats_data.csv', stringsAsFactors = F)
+newest_netherland_grasses <- new_netherland_grasses %>% 
+  select(-c(plot, subplot, community, forb))
+write.csv(newest_netherland_grasses, 'netherland_grasses/data_netherland_grasses.csv', row.names = F)
+
+#greenhouse_cats ---- 
+greenhouse_cats <- read.csv('greenhouse_cats/data_greenhouse_cats.csv', stringsAsFactors = F)
+# greenhouse_cats <- greenhouse_cats %>% 
+#   rename_with(~ paste0(.x, ".outcome"), 2:6) %>% 
+#   select(-X)
 greenhouse_cats <- greenhouse_cats %>% 
-  rename_with(~ paste0(.x, ".outcome"), 2:6) %>% 
-  select(-X)
+  mutate(across(1:5, ~.x *100))
+  
 new_greenhouse_cats <- add_shannon_diversity(greenhouse_cats)
 write.csv(new_greenhouse_cats, 'greenhouse_cats/greenhouse_cats_data.csv', row.names = F)  

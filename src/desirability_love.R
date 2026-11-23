@@ -3,7 +3,7 @@
 
 #Parameters to define and libraries to load ----- 
 directory_string <- 'C:/Users/riara/OneDrive/All Documents/UCBerk Personal research work/LOVE/community_assembly_love_RR-NEW/outputs_desirability'
-training_sizes_list <- c(20, 50, 80, 150, 400, 800, 1200, 1500)
+training_sizes_list <- c(10, 20, 50, 80, 150, 400, 800, 1200, 1500)
 library(randomForestSRC)
 library(tidyverse)
 
@@ -91,7 +91,7 @@ mean_absolute_error <- function(pred, obs) {
   return(mae)
 }
 
-visualizing_similarities <- funct(pred, obs) {
+visualizing_similarities <- function(pred, obs) {
   pred <- pred[[1]]
   obs  <- obs[[1]]
   graph <- ggplot(aes(x = pred, y = obs)) + geom_point()

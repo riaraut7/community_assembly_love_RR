@@ -104,8 +104,9 @@ fns = gsub('data/human_gut','data/human_and_mouse_gut',fns)
 fns = gsub('data/mouse_gut','data/human_and_mouse_gut',fns)
 
 source('src/dataset_stats.R')
-
+#***something is wrong here 
 dataset_stats_all = rbindlist(lapply(fns, get_dataset_stats))
+
 
 # add some additional info
 df_all = df_all_raw %>% 
@@ -114,7 +115,8 @@ df_all = df_all_raw %>%
   mutate(method_nice = factor(methods_nice[method],levels=methods_nice,ordered=TRUE)) %>%
   left_join(dataset_stats_all,by='name') %>%
   mutate(deterministic = name %in% c('grassland_annual_plants','grassland_annual_plants_drought','human_gut','mouse_gut')) %>%
-  mutate(empirical = name %in% c("ciliates","fly_gut","fruit_flies","prairie_plants","soil_bacteria")) %>%
+  mutate(empirical = name %in% c("ciliates","fly_gut","fruit_flies","prairie_plants",
+                                 "soil_bacteria", "netherland_grasses")) %>%
   mutate(abundance_mae_mean_test_scaled = 
            abundance_mae_mean_test / q_995) %>%
   mutate(abundance_mae_mean_test_scaled_clipped = 
@@ -140,6 +142,7 @@ df_10_only <- df_cleaned %>%
 write.csv(df_10_only, 'outputs/statistical/10_training_final_dataset.csv')
 
 #Plotting graphs, unstolen ---- 
+getwd()
 
 df_21 <- read.csv('outputs/statistical/21_training_final_dataset.csv')
 graph_21 <- ggplot(df_21, aes(x =name_nice , y = abundance_mae_mean_test_scaled, color = method)) + geom_point() + geom_jitter(width = 0.05)
@@ -152,3 +155,4 @@ graph_10
 colnames(df_10)
 data_and_env_number <- df_10 %>% 
   dplyr::select(c(name_nice, n_env_levels, n_env))
+
